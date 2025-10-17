@@ -4,6 +4,7 @@ dist/*
 public/*
 **/out/*
 **/node_modules/*
+src/*
 
 **/.next/*
 next.config.js
