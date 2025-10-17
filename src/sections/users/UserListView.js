@@ -17,7 +17,7 @@ export default function UserListView() {
     const [users, setUsers] = useState([]);
 
     const getData = async () => {
-        var users = await supabase.from("user").select("*");
+        // var users = await supabase.from("user").select("*");
     };
 
     useEffect(() => {
