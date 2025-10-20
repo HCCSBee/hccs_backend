@@ -19,9 +19,9 @@ export async function OPTIONS() {
 }
 
 // ✅ Handle GET request
-export async function POST(request) {
+export async function GET(request) {
     unstable_noStore();
-    const body = await request.formData();
+
     const supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL,
         process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE,
@@ -33,7 +33,11 @@ export async function POST(request) {
         }
     );
 
-    var { data, error } = await supabase.from("user").select('email,username, referral_code, contact, country, id').eq("id", body.get("id"));
+    const { data, error } = await supabase
+        .from("payment_method")
+        .select("*").order("id", {
+            ascending: true
+        })
 
     if (error) {
         return new NextResponse(
@@ -45,11 +49,8 @@ export async function POST(request) {
         );
     }
 
-
     return new NextResponse(
-        JSON.stringify({
-            status: true, data: data[0]
-        }),
+        JSON.stringify({ status: true, data: data }),
         {
             status: 200,
             headers: corsHeaders,
