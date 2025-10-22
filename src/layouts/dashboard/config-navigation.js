@@ -47,19 +47,7 @@ export function useNavData() {
   const data = useMemo(
     () => [
       // OVERVIEW
-      // ----------------------------------------------------------------------
-      {
-        subheader: 'overview v5.7.0',
-        items: [
-          { title: 'one', path: paths.dashboard.root, icon: ICONS.dashboard },
-          { title: 'two', path: paths.dashboard.two, icon: ICONS.ecommerce },
-          {
-            title: 'three',
-            path: paths.dashboard.three,
-            icon: ICONS.analytics,
-          },
-        ],
-      },
+
 
       // MANAGEMENT
       // ----------------------------------------------------------------------
@@ -72,10 +60,37 @@ export function useNavData() {
             icon: ICONS.user,
 
           }, {
+            title: 'admin',
+            path: paths.admins.root,
+            icon: ICONS.user,
+
+          }, {
             title: 'prizes',
             path: paths.prizes.root,
             icon: ICONS.product,
 
+          }, {
+            title: 'marketplace',
+            path: paths.prizes.root,
+            icon: ICONS.product,
+
+          }, {
+            title: 'Wallet',
+            path: paths.prizes.root,
+            icon: ICONS.product,
+
+          }, {
+            title: 'Settings',
+            path: paths.prizes.root,
+            icon: ICONS.product,
+            children: [
+              {
+                title: 'Wallet',
+                path: paths.prizes.root,
+                icon: ICONS.product,
+
+              },
+            ]
           },
         ],
       },

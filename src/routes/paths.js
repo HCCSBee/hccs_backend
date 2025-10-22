@@ -4,7 +4,9 @@ const ROOTS = {
   AUTH: '/auth',
   DASHBOARD: '/dashboard',
   USER: '/users',
-  PRIZE: '/prizes'
+  PRIZE: '/prizes',
+  SETTINGS: '/settings',
+  ADMIN: '/admin'
 };
 
 // ----------------------------------------------------------------------
@@ -34,10 +36,17 @@ export const paths = {
     root: ROOTS.USER,
     details: (id) => `${ROOTS.USER}/users/details/${id}`,
   },
+  admins: {
+    root: ROOTS.ADMIN
+  },
   prizes: {
     root: ROOTS.PRIZE,
     create: `${ROOTS.PRIZE}/create`,
     details: (id) => `${ROOTS.PRIZE}/${id}/details`,
     edit: `${ROOTS.PRIZE}/create`
+  },
+  settings: {
+    backgrounds: ROOTS.SETTINGS + "/backgrounds",
+
   }
 };
