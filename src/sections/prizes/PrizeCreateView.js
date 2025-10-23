@@ -21,10 +21,7 @@ export default function PrizeCreateView() {
     const [categories, setCategories] = useState([]);
     const [form, setForm] = useState({
         name: "",
-        image: "",
-        lots: 0,
         price: 0,
-        description: ""
     });
 
     const router = useRouter();

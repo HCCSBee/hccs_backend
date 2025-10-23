@@ -2,9 +2,8 @@ import { NextResponse } from "next/server";
 import { createClient } from '@supabase/supabase-js';
 import { unstable_noStore } from "next/cache";
 
-export async function POST(request) {
+export async function GET(request) {
     unstable_noStore();
-    var body = await request.formData();
     const supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL,
         process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE,
@@ -16,12 +15,13 @@ export async function POST(request) {
         }
     );
 
-    const { data, error } = await supabase.from("prize").select('*, prize_content(*)').eq("id", body.get('id'))
+    const { data, error } = await supabase.from("background").select().order("id", {
+        ascending: true
+    });
 
     if (data) {
-        var gift = data[0];
 
-        return NextResponse.json({ status: true, data: data[0] })
+        return NextResponse.json({ status: true, data: data })
     } else {
         return NextResponse.json({ status: false, message: error.message })
     }

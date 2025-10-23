@@ -46,7 +46,8 @@ export const paths = {
     edit: `${ROOTS.PRIZE}/create`
   },
   settings: {
-    backgrounds: ROOTS.SETTINGS + "/backgrounds",
+    root: ROOTS.SETTINGS + "/background",
+    backgrounds: ROOTS.SETTINGS + "/background",
 
   }
 };

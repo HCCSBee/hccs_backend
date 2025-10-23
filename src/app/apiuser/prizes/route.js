@@ -34,8 +34,8 @@ export async function GET(request) {
     );
 
     const { data, error } = await supabase
-        .from("gift")
-        .select("*,gift_image(*)");
+        .from("prize")
+        .select("*,prize_content(*)");
 
     if (error) {
         return new NextResponse(

@@ -34,8 +34,8 @@ export async function POST(request) {
     );
 
     const { data, error } = await supabase
-        .from("gift")
-        .select("*, gift_image(*)").eq("id", body.get('id'))
+        .from("prize")
+        .select("*, prize_content(*, prize_tier(*))").eq("id", body.get('id'))
 
 
     if (error) {
@@ -48,12 +48,6 @@ export async function POST(request) {
         );
     }
 
-    var lotsRes = await supabase.from("gift_lots")
-        .select("*", { count: "exact", head: true })
-        .eq("gift_id", data[0].id).is("user_id", null);
-
-
-    data[0]['available'] = lotsRes.count;
 
     return new NextResponse(
         JSON.stringify({ status: true, data: data[0] }),

@@ -6,12 +6,12 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 
 import { useSettingsContext } from 'src/components/settings';
-import { Button, Card, CardContent, CardHeader, IconButton, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
+import { Button, Card, CardContent, CardHeader, Dialog, DialogActions, DialogContent, DialogTitle, Icon, IconButton, Stack, Table, TableBody, TableCell, TableHead, TableRow, TextField } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { supabase } from 'src/auth/context/supabase/lib';
 import Link from 'next/link';
 import { paths } from 'src/routes/paths';
-import { get_prizes } from 'src/components/api/api';
+import { create_prize, get_prizes } from 'src/components/api/api';
 import Iconify from 'src/components/iconify';
 import { useRouter } from 'next/navigation';
 
@@ -21,6 +21,20 @@ export default function PrizeListView() {
     const settings = useSettingsContext();
     const [prizes, setPrizes] = useState([]);
     const router = useRouter();
+    const [prizeDialogForm, setPrizeDialogForm] = useState({
+        name: "",
+        price: 0
+    });
+    const [openPrizeDialog, setOpenPrizeDialog] = useState(false);
+
+
+    const handleChangePrizeForm = (e) => {
+        const { name, value } = e.target;
+        setPrizeDialogForm({
+            ...prizeDialogForm,
+            [name]: value
+        });
+    }
 
     const getData = async () => {
         var res = await get_prizes();
@@ -33,6 +47,30 @@ export default function PrizeListView() {
         router.push(paths.prizes.details(r.id))
     }
 
+    const [selectedPrize, setSelectedPrize] = useState(null);
+    const handleOpenPrizeDialog = (row = null) => {
+        if (row) {
+            setSelectedPrize(row);
+        }
+        setOpenPrizeDialog(true);
+
+    };
+
+    const handleSubmitPrize = async () => {
+        var { data, error } = await create_prize(prizeDialogForm);
+        if (!error) {
+            setOpenPrizeDialog(false);
+            setPrizeDialogForm({
+                name: "",
+                price: 0
+            });
+            getData();
+            alert("Created");
+        } else {
+            alert("Error creating prize");
+        }
+    };
+
     useEffect(() => {
         getData();
     }, []);
@@ -42,11 +80,14 @@ export default function PrizeListView() {
             <Card>
                 <CardHeader title="Prizes"
                     action={
-                        <Link href={paths.prizes.create}>
-                            <Button
-                                variant='contained'
-                            >Create</Button>
-                        </Link>
+
+                        <Button
+                            onClick={() => {
+                                handleOpenPrizeDialog();
+                            }}
+                            variant='contained'
+                        >Create</Button>
+
                     }
                 ></CardHeader>
                 <CardContent>
@@ -54,9 +95,7 @@ export default function PrizeListView() {
                         <TableHead>
                             <TableRow>
                                 <TableCell>Prize</TableCell>
-                                <TableCell>Lots</TableCell>
                                 <TableCell>Price</TableCell>
-                                <TableCell>Category</TableCell>
                                 <TableCell></TableCell>
                             </TableRow>
                         </TableHead>
@@ -65,17 +104,21 @@ export default function PrizeListView() {
                                 prizes.map(r => (
                                     <TableRow key={r.id}>
                                         <TableCell>{r.name}</TableCell>
-                                        <TableCell>{r.lots}</TableCell>
                                         <TableCell>{r.price}</TableCell>
-                                        <TableCell>{r.gift_category?.name}</TableCell>
                                         <TableCell style={{
                                             justifyContent: "flex-end",
                                             alignItems: "flex-end",
                                             display: "flex"
                                         }}>
+                                            <IconButton onClick={() => {
+                                                handleOpenPrizeDialog(r)
+
+                                            }}>
+                                                <Iconify icon="mingcute:edit-line" />
+                                            </IconButton>
                                             <IconButton
                                                 onClick={() => {
-                                                    openPrize(r)
+                                                    openPrize(r);
                                                 }}
                                             >
                                                 <Iconify icon="solar:alt-arrow-right-line-duotone" />
@@ -91,7 +134,23 @@ export default function PrizeListView() {
             </Card>
 
 
+            <Dialog open={openPrizeDialog} onClose={() => setOpenPrizeDialog(false)}>
+                <DialogTitle>Create Prize</DialogTitle>
+                <DialogContent style={{ minWidth: 500 }}>
+                    <Stack direction={"column"} gap={2} marginTop={2}>
 
+                        <TextField label="Name" name="name" value={prizeDialogForm.name} onChange={handleChangePrizeForm}></TextField>
+                        <TextField label="Price" name="price" value={prizeDialogForm.price} onChange={handleChangePrizeForm}></TextField>
+                    </Stack>
+                </DialogContent>
+                <DialogActions>
+                    <Button variant="contained"
+                        onClick={handleSubmitPrize}
+                    >
+                        Submit
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Container>
     );
 }

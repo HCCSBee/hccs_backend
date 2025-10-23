@@ -15,7 +15,7 @@ export async function GET(request) {
         }
     );
 
-    const { data, error } = await supabase.from("gift").select();
+    const { data, error } = await supabase.from("prize").select();
 
     if (data) {
 

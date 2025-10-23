@@ -81,12 +81,12 @@ export function useNavData() {
 
           }, {
             title: 'Settings',
-            path: paths.prizes.root,
+            path: paths.settings.root,
             icon: ICONS.product,
             children: [
               {
-                title: 'Wallet',
-                path: paths.prizes.root,
+                title: 'Background',
+                path: paths.settings.backgrounds,
                 icon: ICONS.product,
 
               },

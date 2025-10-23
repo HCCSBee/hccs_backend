@@ -33,10 +33,72 @@ export async function POST(request) {
         }
     );
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-        email: body.get("email"),
-        password: body.get("password")
-    });
+    const userRes = await supabase.from("user").select().eq("email", body.get("email"));
+
+    if (userRes.data.length > 0) {
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: body.get("email"),
+            password: body.get("password")
+        });
+
+        return new NextResponse(
+            JSON.stringify({
+                status: true, data: {
+                    access_token: data.session.access_token,
+                    refresh_token: data.session.refresh_token
+                }
+            }),
+            {
+                status: 200,
+                headers: corsHeaders,
+            }
+        );
+
+    } else {
+        const { data, error } = await supabase.auth.signUp({
+            email: body.get("email"),
+            password: body.get("password")
+        });
+        if (error) {
+            return new NextResponse(
+                JSON.stringify({ status: false, message: error.message }),
+                {
+                    status: 400,
+                    headers: corsHeaders,
+                }
+            );
+        }
+
+        var res2 = await supabase.from("user").insert({
+            id: data.user.id,
+            email: body.get("email")
+        });
+
+        if (res2.error) {
+            await supabase.auth.admin.deleteUser(data.user.id)
+            return new NextResponse(
+                JSON.stringify({ status: false, message: data.user.id + res2.error.message }),
+                {
+                    status: 400,
+                    headers: corsHeaders,
+                }
+            );
+        }
+        console.log("data", data);
+        return new NextResponse(
+            JSON.stringify({
+                status: true, data: {
+                    access_token: data.session.access_token,
+                    refresh_token: data.session.refresh_token
+                }
+            }),
+            {
+                status: 200,
+                headers: corsHeaders,
+            }
+        );
+    }
+
 
     if (error) {
         return new NextResponse(
@@ -48,16 +110,5 @@ export async function POST(request) {
         );
     }
 
-    return new NextResponse(
-        JSON.stringify({
-            status: true, data: {
-                access_token: data.session.access_token,
-                refresh_token: data.session.refresh_token
-            }
-        }),
-        {
-            status: 200,
-            headers: corsHeaders,
-        }
-    );
+
 }

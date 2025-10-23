@@ -16,12 +16,12 @@ export async function POST(request) {
         }
     );
 
-    const { data, error } = await supabase.from("prize").select('*, prize_content(*)').eq("id", body.get('id'))
+    const { data, error } = await supabase.from("prize_content").select().eq("prize_id", body.get("id")).order("id", {
+        ascending: true
+    })
+    if (!error) {
 
-    if (data) {
-        var gift = data[0];
-
-        return NextResponse.json({ status: true, data: data[0] })
+        return NextResponse.json({ status: true, data: data })
     } else {
         return NextResponse.json({ status: false, message: error.message })
     }
