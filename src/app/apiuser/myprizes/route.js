@@ -33,7 +33,13 @@ export async function POST(request) {
         }
     );
 
-    var { data, error } = await supabase.from("user").select('email,username, referral_code, contact,  id').eq("id", body.get("id"));
+    const { data, error } = await supabase.rpc('get_user_prize_counts', {
+        uid: body.get('user_id')
+    });
+
+    if (error) console.error(error);
+    else console.log(data);
+
 
     if (error) {
         return new NextResponse(
@@ -47,9 +53,7 @@ export async function POST(request) {
 
 
     return new NextResponse(
-        JSON.stringify({
-            status: true, data: data[0]
-        }),
+        JSON.stringify({ status: true, data: data }),
         {
             status: 200,
             headers: corsHeaders,

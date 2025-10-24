@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from '@supabase/supabase-js';
-import { unstable_noStore } from "next/cache";
 
 export async function POST(request) {
-    unstable_noStore();
     var body = await request.formData();
     const supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -16,12 +14,13 @@ export async function POST(request) {
         }
     );
 
-    const { data, error } = await supabase.from("prize_content").select().eq("prize_id", body.get("id")).eq("deleted", 0).order("id", {
-        ascending: true
-    })
+    const { data, error } = await supabase.from("prize_content").update({
+        deleted: 1
+    }).eq("id", body.get("id"));
     if (!error) {
+        // var gift = data[0];
 
-        return NextResponse.json({ status: true, data: data })
+        return NextResponse.json({ status: true, })
     } else {
         return NextResponse.json({ status: false, message: error.message })
     }

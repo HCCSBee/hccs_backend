@@ -2,9 +2,8 @@ import { NextResponse } from "next/server";
 import { createClient } from '@supabase/supabase-js';
 import { unstable_noStore } from "next/cache";
 
-export async function POST(request) {
+export async function GET(request) {
     unstable_noStore();
-    var body = await request.formData();
     const supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL,
         process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE,
@@ -16,10 +15,9 @@ export async function POST(request) {
         }
     );
 
-    const { data, error } = await supabase.from("prize_content").select().eq("prize_id", body.get("id")).eq("deleted", 0).order("id", {
-        ascending: true
-    })
-    if (!error) {
+    const { data, error } = await supabase.from("user_wallet_transaction_type").select();
+
+    if (data) {
 
         return NextResponse.json({ status: true, data: data })
     } else {

@@ -16,10 +16,12 @@ export async function POST(request) {
         }
     );
 
-    const { data, error } = await supabase.from("prize_content").select().eq("prize_id", body.get("id")).eq("deleted", 0).order("id", {
-        ascending: true
+    const { data, error } = await supabase.from("user_prize").select('*, user_prize_status(*), prize_content(*, prize(*))').eq("user_id", body.get('id')).order('id', {
+        ascending: false
     })
-    if (!error) {
+
+
+    if (data) {
 
         return NextResponse.json({ status: true, data: data })
     } else {

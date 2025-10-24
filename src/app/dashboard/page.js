@@ -1,3 +1,4 @@
+import PerformanceView from 'src/sections/dashboard/PerformanceView';
 import OneView from 'src/sections/one/view';
 
 // ----------------------------------------------------------------------
@@ -7,5 +8,5 @@ export const metadata = {
 };
 
 export default function Page() {
-  return <OneView />;
+  return <PerformanceView />;
 }

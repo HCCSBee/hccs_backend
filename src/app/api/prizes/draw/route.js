@@ -4,7 +4,7 @@ import { unstable_noStore } from "next/cache";
 
 export async function POST(request) {
     unstable_noStore();
-    var body = await request.formData();
+    const body = await request.formData();
     const supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL,
         process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE,
@@ -16,10 +16,14 @@ export async function POST(request) {
         }
     );
 
-    const { data, error } = await supabase.from("prize_content").select().eq("prize_id", body.get("id")).eq("deleted", 0).order("id", {
-        ascending: true
-    })
-    if (!error) {
+    const { data, error } = await supabase.from("draw").select(
+        "*, prize_content(*), user(*)"
+    ).order("id", {
+        ascending: false
+    }).eq("prize_id", body.get("id"))
+
+    if (data) {
+
 
         return NextResponse.json({ status: true, data: data })
     } else {

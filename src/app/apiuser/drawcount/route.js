@@ -33,11 +33,14 @@ export async function POST(request) {
         }
     );
 
-    var { data, error } = await supabase.from("user").select('email,username, referral_code, contact,  id').eq("id", body.get("id"));
+    const { count, error: drawError } = await supabase
+        .from('draw')
+        .select('*', { count: 'exact', head: true })
+        .eq("prize_id", body.get("prize_id"));
 
-    if (error) {
+    if (drawError) {
         return new NextResponse(
-            JSON.stringify({ status: false, message: error.message }),
+            JSON.stringify({ status: false, message: drawError.message }),
             {
                 status: 400,
                 headers: corsHeaders,
@@ -45,11 +48,8 @@ export async function POST(request) {
         );
     }
 
-
     return new NextResponse(
-        JSON.stringify({
-            status: true, data: data[0]
-        }),
+        JSON.stringify({ status: true, data: count }),
         {
             status: 200,
             headers: corsHeaders,

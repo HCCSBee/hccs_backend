@@ -16,12 +16,16 @@ export async function POST(request) {
         }
     );
 
-    const { data, error } = await supabase.from("prize_content").select().eq("prize_id", body.get("id")).eq("deleted", 0).order("id", {
-        ascending: true
-    })
-    if (!error) {
+    const { data, error } = await supabase.from("user").select('*').eq("id", body.get('id'))
 
-        return NextResponse.json({ status: true, data: data })
+    const wallet = await supabase.from("user_wallet").select("*").eq('deleted', 0).eq("user_id", body.get('id')).order("id", {
+        ascending: false
+    })
+
+
+    if (data) {
+
+        return NextResponse.json({ status: true, data: data[0], wallet: wallet.data })
     } else {
         return NextResponse.json({ status: false, message: error.message })
     }

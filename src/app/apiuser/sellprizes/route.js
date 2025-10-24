@@ -33,22 +33,26 @@ export async function POST(request) {
         }
     );
 
-    var { data, error } = await supabase.from("user").select('email,username, referral_code, contact,  id').eq("id", body.get("id"));
+    var _prizes = JSON.parse(body.get("prizes"));
+    var res = await supabase.from("user_prize").update({
+        user_prize_status_id: 3
+    }).eq("user_id", body.get("user_id"))
+        .in("prize_content_id", _prizes).select();
 
-    if (error) {
-        return new NextResponse(
-            JSON.stringify({ status: false, message: error.message }),
-            {
-                status: 400,
-                headers: corsHeaders,
-            }
-        );
+    for (var i = 0; i < res.data.length; i++) {
+        await supabase.from("user_wallet").insert({
+            user_id: body.get("user_id"),
+            remarks: "Selling item " + res.data[i].id,
+            debit: res.data[i].price,
+            user_wallet_transaction_type_id: 3
+        });
     }
+
 
 
     return new NextResponse(
         JSON.stringify({
-            status: true, data: data[0]
+            status: true,
         }),
         {
             status: 200,

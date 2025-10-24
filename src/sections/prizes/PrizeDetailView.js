@@ -12,7 +12,7 @@ import { supabase } from 'src/auth/context/supabase/lib';
 import Link from 'next/link';
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'next/navigation';
-import { create_prize, create_prize_content, get_background, get_prize, get_prize_content, get_prize_tiers, insert_prize_image, update_prize_content, uploadImage } from 'src/components/api/api';
+import { create_prize, create_prize_content, delete_prize_content, get_background, get_prize, get_prize_content, get_prize_draws, get_prize_tiers, insert_prize_image, update_prize_content, uploadImage } from 'src/components/api/api';
 import { get, set } from 'lodash';
 import Iconify from 'src/components/iconify';
 
@@ -27,6 +27,7 @@ export default function PrizeDetailView({ id }) {
     const [openContentDialog, setOpenContentDialog] = useState(false);
     const [selectedPrize, setSelectedPrize] = useState(null);
     const [backgrounds, setBackgrounds] = useState([]);
+    const [draws, setDraws] = useState([]);
 
     const [contentDialogForm, setContentDialogForm] = useState({
         name: "",
@@ -37,6 +38,35 @@ export default function PrizeDetailView({ id }) {
         thumbnail: "",
         background: ""
     });
+
+    useEffect(() => {
+        const channel = supabase
+            .channel('draw_changes') // name your channel anything
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',          // 'INSERT', 'UPDATE', 'DELETE', or '*'
+                    schema: 'public',    // Supabase uses 'public' by default
+                    table: 'draw',
+                },
+                (payload) => {
+                    handleGetDraws();
+                }
+            )
+            .subscribe()
+
+        // Cleanup on unmount
+        return () => {
+            supabase.removeChannel(channel)
+        }
+    }, [])
+
+    const handleGetDraws = async () => {
+        var res = await get_prize_draws({ id: id });
+        if (res.status) {
+            setDraws(res.data);
+        }
+    };
 
     const handleChangeContentDialog = (e) => {
         setContentDialogForm({
@@ -101,6 +131,17 @@ export default function PrizeDetailView({ id }) {
         }
     };
 
+    const handleDeletePrize = async (row) => {
+        var cfm = window.confirm("Are you sure you want to delete ?");
+        if (!cfm) {
+            return;
+        }
+        var res = await delete_prize_content({ id: row.id });
+        if (res.status) {
+            getData();
+        }
+    }
+
     const handleChangeFile = async (e) => {
         if (e.target.files.length) {
             var res = await uploadImage(e.target.files[0]);
@@ -146,6 +187,7 @@ export default function PrizeDetailView({ id }) {
 
     useEffect(() => {
         getData();
+        handleGetDraws();
     }, []);
 
     return (
@@ -209,7 +251,18 @@ export default function PrizeDetailView({ id }) {
                                                         zIndex: 3
                                                     }}
                                                     direction={"row"}
+                                                    gap={1}
                                                 >
+                                                    <IconButton
+                                                        onClick={() => {
+                                                            handleDeletePrize(c)
+                                                        }}
+                                                        style={{
+                                                            backgroundColor: "white",
+                                                            cursor: "pointer"
+                                                        }}>
+                                                        <Iconify icon="tabler:trash" />
+                                                    </IconButton>
                                                     <IconButton
                                                         onClick={() => {
                                                             handleOpenContentDialog(c)
@@ -251,6 +304,38 @@ export default function PrizeDetailView({ id }) {
                                     ))}
                                 </Stack>
                             </>
+                        )}
+
+                        {selectedTab == 'draws' && (
+                            <Table>
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell>Draw #</TableCell>
+                                        <TableCell>Prize</TableCell>
+                                        <TableCell>Price</TableCell>
+                                        <TableCell>Item Won</TableCell>
+
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {draws.map(r => (
+                                        <TableRow key={r.id}>
+                                            <TableCell>#{r.id}</TableCell>
+                                            <TableCell>{r.prize_content.name}</TableCell>
+                                            <TableCell>{r.prize_content?.price?.toFixed(2)}</TableCell>
+                                            <TableCell>
+                                                <img src={process.env.NEXT_PUBLIC_STORAGE_URL + r.prize_content.thumbnail}
+                                                    style={{
+                                                        width: "40px"
+                                                    }}
+                                                />
+                                            </TableCell>
+
+
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
                         )}
 
                         <br />

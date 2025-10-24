@@ -34,8 +34,9 @@ export const paths = {
   },
   users: {
     root: ROOTS.USER,
-    details: (id) => `${ROOTS.USER}/users/details/${id}`,
+    details: (id) => `${ROOTS.USER}/details/${id}`,
   },
+
   admins: {
     root: ROOTS.ADMIN
   },

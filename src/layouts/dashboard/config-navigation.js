@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { paths } from 'src/routes/paths';
 
 import SvgColor from 'src/components/svg-color';
+import Iconify from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -55,34 +56,49 @@ export function useNavData() {
         subheader: 'management',
         items: [
           {
+            title: 'performance',
+            path: paths.dashboard.root,
+            icon: <Iconify icon="mdi-light:chart-line" />,
+
+          },
+          {
             title: 'user',
             path: paths.users.root,
             icon: ICONS.user,
 
-          }, {
-            title: 'admin',
-            path: paths.admins.root,
-            icon: ICONS.user,
+          },
 
-          }, {
+          // {
+          //   title: 'admin',
+          //   path: paths.admins.root,
+          //   icon: ICONS.user,
+
+          // }, 
+
+          {
             title: 'prizes',
             path: paths.prizes.root,
             icon: ICONS.product,
 
-          }, {
-            title: 'marketplace',
-            path: paths.prizes.root,
-            icon: ICONS.product,
+          },
 
-          }, {
-            title: 'Wallet',
-            path: paths.prizes.root,
-            icon: ICONS.product,
+          // {
+          //   title: 'marketplace',
+          //   path: paths.prizes.root,
+          //   icon: ICONS.product,
 
-          }, {
+          // },
+
+          // {
+          //   title: 'Wallet',
+          //   path: paths.prizes.root,
+          //   icon: <Iconify icon="uil:wallet" ></Iconify>,
+
+          // }, 
+          {
             title: 'Settings',
             path: paths.settings.root,
-            icon: ICONS.product,
+            icon: <Iconify icon="ion:settings-outline" />,
             children: [
               {
                 title: 'Background',
