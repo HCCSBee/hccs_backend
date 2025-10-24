@@ -49,14 +49,8 @@ export default function AuthClassicLayout({ children, image, title }) {
       spacing={10}
       alignItems="center"
       justifyContent="center"
-      sx={{
-        ...bgGradient({
-          color: alpha(
-            theme.palette.background.default,
-            theme.palette.mode === 'light' ? 0.88 : 0.94
-          ),
-          imgUrl: '/assets/background/overlay_2.jpg',
-        }),
+      style={{
+        background: "#f6f3e4"
       }}
     >
       <Typography variant="h3" sx={{ maxWidth: 480, textAlign: 'center' }}>
@@ -66,7 +60,7 @@ export default function AuthClassicLayout({ children, image, title }) {
       <Box
         component="img"
         alt="auth"
-        src={image || '/assets/illustrations/illustration_dashboard.png'}
+        src={"/logo/boxly_logo.jpg"}
         sx={{
           maxWidth: {
             xs: 480,
