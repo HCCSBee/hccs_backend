@@ -14,22 +14,13 @@ export async function POST(request) {
         }
     );
 
-    const { data, error } = await supabase.from("gift").insert({
+    const { data, error } = await supabase.from("prize").insert({
         name: body.get("name"),
-        price: body.get("price"),
-        description: body.get('description'),
-        lots: body.get("lots")
+        price: body.get("price")
     }).select();
 
     if (data) {
-        var gift = data[0];
 
-        for (var i = 1; i <= body.get("lots"); i++) {
-            await supabase.from("gift_lots").insert({
-                gift_id: gift.id,
-                lot_number: i
-            });
-        }
 
 
         return NextResponse.json({ status: true, })
