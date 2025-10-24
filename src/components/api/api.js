@@ -10,6 +10,7 @@ export const get_prize_tiers = async (data) => create_function("/api/prizes/tier
 export const get_prize_content = async (data) => create_function("/api/prizes/content", data, 1);
 export const create_prize_content = async (data) => create_function("/api/prizes/content/create", data, 1);
 export const update_prize_content = async (data) => create_function("/api/prizes/content/update", data, 1);
+export const toggle_prize_active = async (data) => create_function("/api/prizes/toggle_active/", data, 1);
 export const delete_prize_content = async (data) => create_function("/api/prizes/content/delete", data, 1);
 export const get_background = async (data) => create_function("/api/backgrounds/");
 export const create_background = async (data) => create_function("/api/backgrounds/add", data, 1);

@@ -6,12 +6,12 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 
 import { useSettingsContext } from 'src/components/settings';
-import { Button, Card, CardContent, CardHeader, Dialog, DialogActions, DialogContent, DialogTitle, Icon, IconButton, Stack, Table, TableBody, TableCell, TableHead, TableRow, TextField } from '@mui/material';
+import { Button, Card, CardContent, CardHeader, Dialog, DialogActions, DialogContent, DialogTitle, Icon, IconButton, Stack, Switch, Table, TableBody, TableCell, TableHead, TableRow, TextField } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { supabase } from 'src/auth/context/supabase/lib';
 import Link from 'next/link';
 import { paths } from 'src/routes/paths';
-import { create_prize, get_prizes } from 'src/components/api/api';
+import { create_prize, get_prizes, toggle_prize_active } from 'src/components/api/api';
 import Iconify from 'src/components/iconify';
 import { useRouter } from 'next/navigation';
 
@@ -71,6 +71,16 @@ export default function PrizeListView() {
         }
     };
 
+    const handleToggle = async (row, checked) => {
+        // alert(checked);
+        var res = await toggle_prize_active({
+            id: row.id,
+            active: checked ? 1 : 0
+        });
+        var _items = [...prizes];
+        row.active = checked;
+        setPrizes(_items);
+    }
     useEffect(() => {
         getData();
     }, []);
@@ -110,6 +120,11 @@ export default function PrizeListView() {
                                             alignItems: "flex-end",
                                             display: "flex"
                                         }}>
+                                            <Switch checked={r.active}
+
+                                                onChange={(e) => {
+                                                    handleToggle(r, e.target.checked)
+                                                }}></Switch>
                                             <IconButton onClick={() => {
                                                 handleOpenPrizeDialog(r)
 

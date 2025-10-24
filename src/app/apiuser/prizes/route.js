@@ -35,8 +35,12 @@ export async function GET(request) {
 
     const { data, error } = await supabase
         .from("prize")
-        .select("*,prize_content(*)");
-
+        .select(`
+    *,
+    prize_content!inner(*)
+  `)
+        .eq("active", 1)
+        .eq("prize_content.deleted", 0);
     if (error) {
         return new NextResponse(
             JSON.stringify({ status: false, message: error.message }),
@@ -47,14 +51,6 @@ export async function GET(request) {
         );
     }
 
-    for (var i = 0; i < data.length; i++) {
-        var lotsRes = await supabase.from("gift_lots")
-            .select("*", { count: "exact", head: true })
-            .eq("gift_id", data[i].id).is("user_id", null);
-
-
-        data[i]['available'] = lotsRes.count;
-    }
 
     return new NextResponse(
         JSON.stringify({ status: true, data: data }),
