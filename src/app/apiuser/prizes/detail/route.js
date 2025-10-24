@@ -35,8 +35,9 @@ export async function POST(request) {
 
     const { data, error } = await supabase
         .from("prize")
-        .select("*, prize_content(*, prize_tier(*))").eq("id", body.get('id'))
-
+        .select("*, prize_content!inner(*, prize_tier(*))")
+        .eq("id", body.get("id"))
+        .eq("prize_content.deleted", 0);
 
     if (error) {
         return new NextResponse(
