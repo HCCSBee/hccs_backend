@@ -22,7 +22,7 @@ export async function POST(request) {
         percentage: body.get("percentage"),
         unlock_after: body.get("unlock_after"),
         price: body.get("price"),
-        prize_tier_id: body.get("prize_tier_id"),
+        prize_tier_id: body.get("tier"),
     }).eq("id", body.get("id"));
     if (!error) {
         // var gift = data[0];

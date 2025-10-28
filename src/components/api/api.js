@@ -16,6 +16,12 @@ export const get_background = async (data) => create_function("/api/backgrounds/
 export const create_background = async (data) => create_function("/api/backgrounds/add", data, 1);
 export const delete_background = async (data) => create_function("/api/backgrounds/delete", data, 1);
 
+
+export const get_banners = async (data) => create_function("/api/banners/");
+export const create_banner = async (data) => create_function("/api/banners/create", data, 1);
+export const update_banner = async (data) => create_function("/api/banners/update", data, 1);
+
+
 export const get_users = async (data) => create_function("/api/users/");
 export const get_user_draw = async (data) => create_function("/api/users/draw", data, 1);
 export const get_user_detail = async (data) => create_function("/api/users/detail/", data, 1);
@@ -41,6 +47,31 @@ export const uploadImage = async (file) => {
     );
 
     const { data, error } = await supabase.storage.from("gifts").upload("images/" + file.name, file, {
+
+    });
+
+    if (!error) {
+        return { status: true, data: data };
+    } else {
+        return { status: false, message: error.message };
+    }
+
+}
+
+export const uploadCommonImage = async (file, path) => {
+
+    const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE,
+        {
+            auth: {
+                autoRefreshToken: false,
+                persistSession: false
+            }
+        }
+    );
+
+    const { data, error } = await supabase.storage.from("common").upload(path + file.name, file, {
 
     });
 

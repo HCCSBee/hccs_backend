@@ -19,9 +19,8 @@ export async function OPTIONS() {
 }
 
 // ✅ Handle GET request
-export async function POST(request) {
+export async function GET(request) {
     unstable_noStore();
-    const body = await request.formData();
     const supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL,
         process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE,
@@ -32,12 +31,10 @@ export async function POST(request) {
             },
         }
     );
+
     const { data, error } = await supabase
-        .from("prize")
-        .select("*, prize_content!inner(*, prize_tier(*))")
-        .eq("id", body.get("id"))
-        .eq("prize_content.deleted", 0)
-        .order("id", { ascending: true, foreignTable: "prize_content" });
+        .from("banner").select()
+        .eq("deleted", 0);
 
     if (error) {
         return new NextResponse(
@@ -51,7 +48,7 @@ export async function POST(request) {
 
 
     return new NextResponse(
-        JSON.stringify({ status: true, data: data[0] }),
+        JSON.stringify({ status: true, data: data }),
         {
             status: 200,
             headers: corsHeaders,

@@ -62,6 +62,13 @@ export function useNavData() {
 
           },
           {
+            title: 'banners',
+            path: paths.settings.banners,
+            icon: <Iconify icon="material-symbols:image-outline-rounded" />,
+
+          },
+
+          {
             title: 'user',
             path: paths.users.root,
             icon: ICONS.user,
@@ -82,12 +89,6 @@ export function useNavData() {
 
           },
 
-          // {
-          //   title: 'marketplace',
-          //   path: paths.prizes.root,
-          //   icon: ICONS.product,
-
-          // },
 
           // {
           //   title: 'Wallet',

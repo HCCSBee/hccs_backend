@@ -232,7 +232,7 @@ export default function PrizeDetailView({ id }) {
 
                                 </Stack>
 
-                                <Stack direction={"row"} gap={2} style={{ marginTop: "20px" }}>
+                                <Stack direction={"row"} gap={2} style={{ marginTop: "20px" }} flexWrap={"wrap"}>
                                     {contents.map(c => (
                                         <div key={c.id} style={{
                                             width: "300px",

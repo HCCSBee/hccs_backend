@@ -32,12 +32,12 @@ export async function POST(request) {
             },
         }
     );
+
     const { data, error } = await supabase
-        .from("prize")
-        .select("*, prize_content!inner(*, prize_tier(*))")
-        .eq("id", body.get("id"))
-        .eq("prize_content.deleted", 0)
-        .order("id", { ascending: true, foreignTable: "prize_content" });
+        .from("draw")
+        .select("created_at,prize_content(*,prize_tier(*)), user(*)")
+        .eq("prize_id", body.get("id"))
+        .eq("prize_content.deleted", 0);
 
     if (error) {
         return new NextResponse(
@@ -51,7 +51,7 @@ export async function POST(request) {
 
 
     return new NextResponse(
-        JSON.stringify({ status: true, data: data[0] }),
+        JSON.stringify({ status: true, data: data }),
         {
             status: 200,
             headers: corsHeaders,

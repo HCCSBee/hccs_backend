@@ -2,141 +2,138 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { unstable_noStore } from "next/cache";
 
-// ✅ Define reusable CORS headers
 const corsHeaders = {
-    "Access-Control-Allow-Origin": "*", // You can restrict to http://localhost:3000 if needed
+    "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
     "Cache-Control": "no-store",
 };
 
-// ✅ Handle preflight request (CORS check)
 export async function OPTIONS() {
-    return new NextResponse(null, {
-        status: 200,
-        headers: corsHeaders,
-    });
+    return new NextResponse(null, { status: 200, headers: corsHeaders });
 }
 
-// ✅ Handle GET request
 export async function POST(request) {
     unstable_noStore();
 
-    const body = await request.formData();
-    const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE,
-        {
-            auth: {
-                autoRefreshToken: false,
-                persistSession: false,
-            },
-        }
-    );
+    try {
+        const body = await request.formData();
+        const user_id = body.get("user_id");
+        const prize_id = body.get("prize_id");
+        const quantity = Number(body.get("quantity") || 1);
 
-    var { data, error } = await supabase.rpc('get_user_balance', { uid: body.get('user_id') });
-
-
-    var prizeRes = await supabase.from("prize").select("*").eq("id", body.get("prize_id")).single();
-
-
-    if (error) {
-        return new NextResponse(
-            JSON.stringify({ status: false, message: error.message }),
-            {
-                status: 400,
-                headers: corsHeaders,
-            }
-        );
-    }
-
-    if (data < (prizeRes.data.price * body.get("quantity"))) {
-        return new NextResponse(
-            JSON.stringify({ status: false, message: "Insufficient Balance" }),
-            {
-                status: 400,
-                headers: corsHeaders,
-            }
+        const supabase = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL,
+            process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE,
+            { auth: { autoRefreshToken: false, persistSession: false } }
         );
 
-    }
+        // 🟢 1. Get user balance
+        const { data: balance, error: balanceError } = await supabase.rpc(
+            "get_user_balance",
+            { uid: user_id }
+        );
+        if (balanceError) throw balanceError;
 
-    const { count, error: drawError } = await supabase
-        .from('draw')
-        .select('*', { count: 'exact', head: true })
-        .eq("prize_id", body.get("prize_id"));
+        // 🟢 2. Get prize info
+        const { data: prize, error: prizeError } = await supabase
+            .from("prize")
+            .select("*")
+            .eq("id", prize_id)
+            .single();
+        if (prizeError) throw prizeError;
 
-    var _total_amount = prizeRes.price * count;
-    // 1️⃣ Fetch available prizes
-    const { data: prizes, error: pc_error } = await supabase
-        .from("prize_content")
-        .select("*, prize_tier(*)")
-        .eq("prize_id", body.get("prize_id"))
-        .lte("unlock_after", count)
-        .order("id", { ascending: true });
-    console.log(body.get("prize_id"));
+        // 🟢 3. Check balance
+        const totalCost = prize.price * quantity;
+        if (balance < totalCost) {
+            return new NextResponse(
+                JSON.stringify({ status: false, message: "Insufficient Balance" }),
+                { status: 400, headers: corsHeaders }
+            );
+        }
 
-    if (pc_error) throw pc_error;
-    if (!prizes || prizes.length === 0) throw new Error("No prizes available");
+        // 🟢 4. Count draws so far
+        const { count, error: drawCountError } = await supabase
+            .from("draw")
+            .select("*", { count: "exact", head: true })
+            .eq("prize_id", prize_id);
+        if (drawCountError) throw drawCountError;
 
-    // 2️⃣ Weighted random function (always returns 1 prize)
-    async function pickWeightedPrize(list) {
-        const total = list.reduce((sum, item) => sum + (item.percentage || 0), 0);
-        if (total <= 0) throw new Error("Invalid prize percentages");
+        // 🟢 5. Get eligible prize contents
+        const { data: prizeContents, error: pcError } = await supabase
+            .from("prize_content")
+            .select("*, prize_tier(*)")
+            .eq("prize_id", prize_id)
+            .eq("deleted", 0)
+            .lte("unlock_after", count || 0)
+            .order("id", { ascending: true });
+        if (pcError) throw pcError;
+        if (!prizeContents?.length) throw new Error("No prizes available");
 
-        const random = Math.random() * total;
-        let cumulative = 0;
+        // 🟢 6. Weighted random picker
+        const pickWeightedPrize = (list) => {
+            const total = list.reduce((sum, item) => sum + (item.percentage || 0), 0);
+            if (total <= 0) throw new Error("Invalid prize percentages");
 
-        var _item = list[list.length - 1];
-        for (const item of list) {
-            cumulative += item.percentage || 0;
-            if (random <= cumulative) {
-                _item = item;
+            const random = Math.random() * total;
+            let cumulative = 0;
+            for (const item of list) {
+                cumulative += item.percentage || 0;
+                if (random <= cumulative) return item;
             }
-        }
+            return list[list.length - 1]; // fallback
+        };
 
-        var drawRes = await supabase.from("draw").insert({
-            user_id: body.get("user_id"),
-            prize_id: body.get("prize_id"),
-            prize_content_id: _item.id,
-        }).select();
-        if (!drawRes.error) {
-            console.log(drawRes.error);
-            await supabase.from("user_wallet").insert({
-                user_id: body.get("user_id"),
-                credit: prizeRes.data.price,
-                remarks: "Draw #" + drawRes.data[0].id,
-                user_wallet_transaction_type_id: 5
-            });
+        // 🟢 7. Select prizes for all draws
+        const selectedPrizes = Array.from({ length: quantity }, () =>
+            pickWeightedPrize(prizeContents)
+        );
 
-            await supabase.from("user_prize").insert({
-                user_id: body.get("user_id"),
-                prize_content_id: _item.id,
-                price: _item.price,
-                user_prize_status_id: 1
-            });
-        }
+        // 🟢 8. Deduct once from wallet
+        const { error: walletError } = await supabase.from("user_wallet").insert({
+            user_id,
+            debit: totalCost,
+            remarks: `Draw x${quantity} for prize #${prize_id}`,
+            user_wallet_transaction_type_id: 5,
+        });
+        if (walletError) throw walletError;
 
-        return _item;
+        // 🟢 9. Prepare bulk insert for draws
+        const drawRows = selectedPrizes.map((item) => ({
+            user_id,
+            prize_id,
+            prize_content_id: item.id,
+        }));
+
+        const { data: drawData, error: drawError } = await supabase
+            .from("draw")
+            .insert(drawRows)
+            .select();
+        if (drawError) throw drawError;
+
+        // 🟢 10. Prepare bulk insert for user_prizes
+        const prizeRows = selectedPrizes.map((item) => ({
+            user_id,
+            prize_content_id: item.id,
+            price: item.price,
+            user_prize_status_id: 1,
+        }));
+
+        const { error: userPrizeError } = await supabase
+            .from("user_prize")
+            .insert(prizeRows);
+        if (userPrizeError) throw userPrizeError;
+
+        // ✅ Return all selected prizes
+        return new NextResponse(
+            JSON.stringify({ status: true, data: selectedPrizes }),
+            { status: 200, headers: corsHeaders }
+        );
+    } catch (err) {
+        console.error("❌ Error in draw API:", err);
+        return new NextResponse(
+            JSON.stringify({ status: false, message: err.message }),
+            { status: 500, headers: corsHeaders }
+        );
     }
-
-    // 3️⃣ Pick the prize
-
-    var _prizes = [];
-    for (var i = 0; i < body.get("quantity"); i++) {
-        _prizes.push(await pickWeightedPrize(prizes));
-    }
-    // const selectedPrize = pickWeightedPrize(prizes);
-
-
-
-
-
-    return new NextResponse(
-        JSON.stringify({ status: true, data: _prizes[0] }),
-        {
-            status: 200,
-            headers: corsHeaders,
-        }
-    );
 }

@@ -49,6 +49,7 @@ export const paths = {
   settings: {
     root: ROOTS.SETTINGS + "/background",
     backgrounds: ROOTS.SETTINGS + "/background",
+    banners: ROOTS.SETTINGS + "/banners"
 
   }
 };
