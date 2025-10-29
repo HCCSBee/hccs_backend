@@ -92,7 +92,7 @@ export async function POST(request) {
         // 🟢 8. Deduct once from wallet
         const { error: walletError } = await supabase.from("user_wallet").insert({
             user_id,
-            debit: totalCost,
+            credit: totalCost,
             remarks: `Draw x${quantity} for prize #${prize_id}`,
             user_wallet_transaction_type_id: 5,
         });
