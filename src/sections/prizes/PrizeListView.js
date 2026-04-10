@@ -23,7 +23,8 @@ export default function PrizeListView() {
     const router = useRouter();
     const [prizeDialogForm, setPrizeDialogForm] = useState({
         name: "",
-        price: 0
+        price: 0,
+        slots: 0
     });
     const [openPrizeDialog, setOpenPrizeDialog] = useState(false);
 
@@ -51,6 +52,19 @@ export default function PrizeListView() {
     const handleOpenPrizeDialog = (row = null) => {
         if (row) {
             setSelectedPrize(row);
+            setPrizeDialogForm({
+                name: row.name,
+                price: row.price,
+                slots: row.slots ?? 0,
+                id: row.id,
+            });
+        } else {
+            setSelectedPrize(null);
+            setPrizeDialogForm({
+                name: "",
+                price: 0,
+                slots: 0
+            });
         }
         setOpenPrizeDialog(true);
 
@@ -62,8 +76,10 @@ export default function PrizeListView() {
             setOpenPrizeDialog(false);
             setPrizeDialogForm({
                 name: "",
-                price: 0
+                price: 0,
+                slots: 0
             });
+            setSelectedPrize(null);
             getData();
             alert("Created");
         } else {
@@ -106,6 +122,7 @@ export default function PrizeListView() {
                             <TableRow>
                                 <TableCell>Prize</TableCell>
                                 <TableCell>Price</TableCell>
+                                <TableCell>Slots</TableCell>
                                 <TableCell></TableCell>
                             </TableRow>
                         </TableHead>
@@ -115,6 +132,7 @@ export default function PrizeListView() {
                                     <TableRow key={r.id}>
                                         <TableCell>{r.name}</TableCell>
                                         <TableCell>{r.price}</TableCell>
+                                        <TableCell>{r.slots}</TableCell>
                                         <TableCell style={{
                                             justifyContent: "flex-end",
                                             alignItems: "flex-end",
@@ -150,12 +168,13 @@ export default function PrizeListView() {
 
 
             <Dialog open={openPrizeDialog} onClose={() => setOpenPrizeDialog(false)}>
-                <DialogTitle>Create Prize</DialogTitle>
+                <DialogTitle>{selectedPrize ? "Edit Prize" : "Create Prize"}</DialogTitle>
                 <DialogContent style={{ minWidth: 500 }}>
                     <Stack direction={"column"} gap={2} marginTop={2}>
 
                         <TextField label="Name" name="name" value={prizeDialogForm.name} onChange={handleChangePrizeForm}></TextField>
-                        <TextField label="Price" name="price" value={prizeDialogForm.price} onChange={handleChangePrizeForm}></TextField>
+                        <TextField label="Price" name="price" type="number" value={prizeDialogForm.price} onChange={handleChangePrizeForm}></TextField>
+                        <TextField label="Slots" name="slots" type="number" value={prizeDialogForm.slots} onChange={handleChangePrizeForm}></TextField>
                     </Stack>
                 </DialogContent>
                 <DialogActions>

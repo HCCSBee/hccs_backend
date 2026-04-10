@@ -16,19 +16,15 @@ export async function POST(request) {
         }
     );
 
-    const { data, error } = await supabase.from("user_prize").select('*, user_prize_status(*), prize_content(*, prize(*)), mystery_gift_content(*)').eq("user_id", body.get('id')).order('id', {
-        ascending: false
-    })
+    const { data, error } = await supabase
+        .from("mystery_gift")
+        .select("*, mystery_gift_content(name, thumbnail, background)")
+        .eq("user_id", body.get("user_id"))
+        .order("id", { ascending: false });
 
-
-    if (data) {
-
-        return NextResponse.json({ status: true, data: data })
+    if (!error) {
+        return NextResponse.json({ status: true, data: data });
     } else {
-        return NextResponse.json({ status: false, message: error.message })
+        return NextResponse.json({ status: false, message: error.message });
     }
-
 }
-
-
-

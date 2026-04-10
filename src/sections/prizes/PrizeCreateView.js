@@ -22,6 +22,7 @@ export default function PrizeCreateView() {
     const [form, setForm] = useState({
         name: "",
         price: 0,
+        slots: 0,
     });
 
     const router = useRouter();
@@ -63,7 +64,7 @@ export default function PrizeCreateView() {
                     <Stack gap={2}>
                         <TextField label="Name" name="name" value={form.name} onChange={handleChange} fullWidth />
                         <TextField label="Price" name="price" type="number" value={form.price} onChange={handleChange} fullWidth />
-                        <TextField label="Lots" name="lots" type="number" value={form.lots} onChange={handleChange} fullWidth />
+                        <TextField label="Slots" name="slots" type="number" value={form.slots} onChange={handleChange} fullWidth />
                         <TextField label="Description" name="description" value={form.description} onChange={handleChange} fullWidth />
                     </Stack>
                 </CardContent>

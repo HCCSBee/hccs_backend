@@ -34,21 +34,42 @@ export async function POST(request) {
     );
 
     var _prizes = JSON.parse(body.get("prizes"));
+    var _mysteryGiftIds = body.get("mystery_gift_ids") ? JSON.parse(body.get("mystery_gift_ids")) : [];
+    const userId = body.get("user_id");
+
+    // ✅ Sell regular prizes
     var res = await supabase.from("user_prize").update({
         user_prize_status_id: 3
-    }).eq("user_id", body.get("user_id"))
+    }).eq("user_id", userId)
         .in("prize_content_id", _prizes).select();
 
     for (var i = 0; i < res.data.length; i++) {
         await supabase.from("user_wallet").insert({
-            user_id: body.get("user_id"),
+            user_id: userId,
             remarks: "Selling item " + res.data[i].id,
             debit: res.data[i].price,
             user_wallet_transaction_type_id: 3
         });
     }
 
+    // ✅ Sell mystery gifts
+    if (_mysteryGiftIds.length > 0) {
+        var mysteryRes = await supabase.from("user_prize").update({
+            user_prize_status_id: 3
+        }).eq("user_id", userId)
+            .in("id", _mysteryGiftIds)
+            .eq("is_mystery_gift", 1)
+            .select();
 
+        for (var j = 0; j < mysteryRes.data.length; j++) {
+            await supabase.from("user_wallet").insert({
+                user_id: userId,
+                remarks: "Selling mystery gift " + mysteryRes.data[j].id,
+                debit: mysteryRes.data[j].mystery_gift_unlock_price,
+                user_wallet_transaction_type_id: 3
+            });
+        }
+    }
 
     return new NextResponse(
         JSON.stringify({

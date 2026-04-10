@@ -30,7 +30,25 @@ export const get_performance = async (data) => create_function("/api/performance
 export const get_prize_draws = async (data) => create_function("/api/prizes/draw/", data, 1)
 export const get_transaction_types = async (data) => create_function("/api/transaction_type/");
 export const create_user_transaction = async (data) => create_function("/api/wallet/create", data, 1);
+export const create_user_mystery_gift = async (data) => create_function("/apiuser/purchasedraw", data, 1);
 export const get_wallet_total = async () => create_function("/api/performance/wallet");
+
+export const get_mystery_gift_contents = async () => create_function("/api/mystery_gift_content");
+export const create_mystery_gift_content = async (data) => create_function("/api/mystery_gift_content/create", data, 1);
+export const update_mystery_gift_content = async (data) => create_function("/api/mystery_gift_content/update", data, 1);
+export const delete_mystery_gift_content = async (data) => create_function("/api/mystery_gift_content/delete", data, 1);
+
+export const get_user_mystery_gifts = async (data) => create_function("/api/users/mystery_gift", data, 1);
+export const create_mystery_gift = async (data) => create_function("/api/mystery_gift/create", data, 1);
+export const update_mystery_gift = async (data) => create_function("/api/mystery_gift/update", data, 1);
+export const delete_mystery_gift = async (data) => create_function("/api/mystery_gift/delete", data, 1);
+
+export const get_invitation_codes = async () => create_function("/api/invitation_code");
+export const create_invitation_code = async (data) => create_function("/api/invitation_code/create", data, 1);
+export const update_invitation_code = async (data) => create_function("/api/invitation_code/update", data, 1);
+export const delete_invitation_code = async (data) => create_function("/api/invitation_code/delete", data, 1);
+
+export const unlock_user_mystery_gift = async (data) => create_function("/apiuser/unlockmysterygift", data, 1);
 
 // needs to be changed 
 export const uploadImage = async (file) => {

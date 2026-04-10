@@ -22,6 +22,10 @@ export async function OPTIONS() {
 export async function POST(request) {
     unstable_noStore();
     const body = await request.formData();
+    const email = body.get("email");
+    const password = body.get("password");
+    const invitationCode = body.get("invitation_code");
+
     const supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL,
         process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE,
@@ -33,13 +37,33 @@ export async function POST(request) {
         }
     );
 
-    const userRes = await supabase.from("user").select().eq("email", body.get("email"));
+    const userRes = await supabase.from("user").select().eq("email", email);
+
+    if (userRes.error) {
+        return new NextResponse(
+            JSON.stringify({ status: false, message: userRes.error.message }),
+            {
+                status: 400,
+                headers: corsHeaders,
+            }
+        );
+    }
 
     if (userRes.data.length > 0) {
         const { data, error } = await supabase.auth.signInWithPassword({
-            email: body.get("email"),
-            password: body.get("password")
+            email,
+            password
         });
+
+        if (error || !data?.session) {
+            return new NextResponse(
+                JSON.stringify({ status: false, message: error?.message || "Login failed" }),
+                {
+                    status: 400,
+                    headers: corsHeaders,
+                }
+            );
+        }
 
         return new NextResponse(
             JSON.stringify({
@@ -55,10 +79,49 @@ export async function POST(request) {
         );
 
     } else {
+        if (!invitationCode) {
+            return new NextResponse(
+                JSON.stringify({ status: false, message: "Invitation code is required" }),
+                {
+                    status: 400,
+                    headers: corsHeaders,
+                }
+            );
+        }
+
+        const invitationRes = await supabase
+            .from("invitation_code")
+            .select()
+            .eq("code", invitationCode)
+            .is("user_id", null)
+            .eq("is_active", 1)
+            .limit(1);
+
+        if (invitationRes.error) {
+            return new NextResponse(
+                JSON.stringify({ status: false, message: invitationRes.error.message }),
+                {
+                    status: 400,
+                    headers: corsHeaders,
+                }
+            );
+        }
+
+        if (!invitationRes.data || invitationRes.data.length === 0) {
+            return new NextResponse(
+                JSON.stringify({ status: false, message: "Invalid invitation code" }),
+                {
+                    status: 400,
+                    headers: corsHeaders,
+                }
+            );
+        }
+
         const { data, error } = await supabase.auth.signUp({
-            email: body.get("email"),
-            password: body.get("password")
+            email,
+            password
         });
+
         if (error) {
             return new NextResponse(
                 JSON.stringify({ status: false, message: error.message }),
@@ -71,11 +134,11 @@ export async function POST(request) {
 
         var res2 = await supabase.from("user").insert({
             id: data.user.id,
-            email: body.get("email")
+            email
         });
 
         if (res2.error) {
-            await supabase.auth.admin.deleteUser(data.user.id)
+            await supabase.auth.admin.deleteUser(data.user.id);
             return new NextResponse(
                 JSON.stringify({ status: false, message: data.user.id + res2.error.message }),
                 {
@@ -84,7 +147,40 @@ export async function POST(request) {
                 }
             );
         }
-        console.log("data", data);
+
+        const invitationId = invitationRes.data[0].id;
+        const consumeRes = await supabase
+            .from("invitation_code")
+            .update({
+                user_id: data.user.id,
+                is_active: 0,
+            })
+            .eq("id", invitationId)
+            .is("user_id", null)
+            .eq("is_active", 1);
+
+        if (consumeRes.error) {
+            await supabase.from("user").delete().eq("id", data.user.id);
+            await supabase.auth.admin.deleteUser(data.user.id);
+            return new NextResponse(
+                JSON.stringify({ status: false, message: consumeRes.error.message }),
+                {
+                    status: 400,
+                    headers: corsHeaders,
+                }
+            );
+        }
+
+        if (!data?.session) {
+            return new NextResponse(
+                JSON.stringify({ status: false, message: "Registration succeeded but no session was returned" }),
+                {
+                    status: 400,
+                    headers: corsHeaders,
+                }
+            );
+        }
+
         return new NextResponse(
             JSON.stringify({
                 status: true, data: {
@@ -98,17 +194,4 @@ export async function POST(request) {
             }
         );
     }
-
-
-    if (error) {
-        return new NextResponse(
-            JSON.stringify({ status: false, message: error.message }),
-            {
-                status: 400,
-                headers: corsHeaders,
-            }
-        );
-    }
-
-
 }

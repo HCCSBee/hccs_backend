@@ -6,7 +6,9 @@ const ROOTS = {
   USER: '/users',
   PRIZE: '/prizes',
   SETTINGS: '/settings',
-  ADMIN: '/admin'
+  ADMIN: '/admin',
+  MYSTERY_GIFT_CONTENT: '/mystery_gift_content',
+  INVITATION_CODE: '/invitation_code'
 };
 
 // ----------------------------------------------------------------------
@@ -50,6 +52,11 @@ export const paths = {
     root: ROOTS.SETTINGS + "/background",
     backgrounds: ROOTS.SETTINGS + "/background",
     banners: ROOTS.SETTINGS + "/banners"
-
+  },
+  mystery_gift_content: {
+    root: ROOTS.MYSTERY_GIFT_CONTENT
+  },
+  invitation_code: {
+    root: ROOTS.INVITATION_CODE
   }
 };

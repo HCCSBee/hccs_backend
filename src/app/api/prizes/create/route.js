@@ -14,10 +14,26 @@ export async function POST(request) {
         }
     );
 
-    const { data, error } = await supabase.from("prize").insert({
-        name: body.get("name"),
-        price: body.get("price")
-    }).select();
+    let data;
+    let error;
+
+    if (body.get("id")) {
+        ({ data, error } = await supabase
+            .from("prize")
+            .update({
+                name: body.get("name"),
+                price: body.get("price"),
+                slots: body.get("slots")
+            })
+            .eq("id", body.get("id"))
+            .select());
+    } else {
+        ({ data, error } = await supabase.from("prize").insert({
+            name: body.get("name"),
+            price: body.get("price"),
+            slots: body.get("slots")
+        }).select());
+    }
 
     if (data) {
 

@@ -89,6 +89,18 @@ export function useNavData() {
 
           },
 
+          {
+            title: 'Mystery Gift',
+            path: paths.mystery_gift_content.root,
+            icon: <Iconify icon="mdi:gift-outline" />,
+          },
+
+          {
+            title: 'Invitation Code',
+            path: paths.invitation_code.root,
+            icon: <Iconify icon="tabler:ticket" />,
+          },
+
 
           // {
           //   title: 'Wallet',

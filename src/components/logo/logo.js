@@ -40,7 +40,7 @@ const Logo = forwardRef(({ disabledLink = false, sx, ...other }, ref) => {
       }}
       {...other}
     >
-      <img src="/logo/boxly.png" />
+      <img src="/megahoki_logo.png" />
     </Box>
   );
 

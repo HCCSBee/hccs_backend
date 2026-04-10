@@ -50,7 +50,7 @@ export default function AuthClassicLayout({ children, image, title }) {
       alignItems="center"
       justifyContent="center"
       style={{
-        background: "#f6f3e4"
+        // background: "#f6f3e4"
       }}
     >
       <Typography variant="h3" sx={{ maxWidth: 480, textAlign: 'center' }}>
@@ -60,7 +60,7 @@ export default function AuthClassicLayout({ children, image, title }) {
       <Box
         component="img"
         alt="auth"
-        src={"/logo/boxly_logo.jpg"}
+        src={"/megahoki_logo.png"}
         sx={{
           maxWidth: {
             xs: 480,

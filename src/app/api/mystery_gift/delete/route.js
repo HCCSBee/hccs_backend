@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from '@supabase/supabase-js';
-import { unstable_noStore } from "next/cache";
 
 export async function POST(request) {
-    unstable_noStore();
     var body = await request.formData();
     const supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -16,19 +14,14 @@ export async function POST(request) {
         }
     );
 
-    const { data, error } = await supabase.from("user_prize").select('*, user_prize_status(*), prize_content(*, prize(*)), mystery_gift_content(*)').eq("user_id", body.get('id')).order('id', {
-        ascending: false
-    })
+    const { error } = await supabase
+        .from("mystery_gift")
+        .delete()
+        .eq("id", body.get("id"));
 
-
-    if (data) {
-
-        return NextResponse.json({ status: true, data: data })
+    if (!error) {
+        return NextResponse.json({ status: true });
     } else {
-        return NextResponse.json({ status: false, message: error.message })
+        return NextResponse.json({ status: false, message: error.message });
     }
-
 }
-
-
-
