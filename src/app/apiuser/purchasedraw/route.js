@@ -202,6 +202,20 @@ export async function POST(request) {
         });
         if (drawError) throw drawError;
 
+        const nextDrawTotal = Number(prize.draws || 0) + drawRows.length;
+        const { error: prizeDrawsError } = await supabase
+            .from("prize")
+            .update({ draws: nextDrawTotal })
+            .eq("id", prize_id);
+        console.log(debugTag, "prize_draws_update", {
+            prize_id,
+            previousDraws: prize.draws,
+            incrementBy: drawRows.length,
+            nextDrawTotal,
+            prizeDrawsError: prizeDrawsError?.message,
+        });
+        if (prizeDrawsError) throw prizeDrawsError;
+
         // 🟢 10. Prepare bulk insert for user_prizes
         const prizeRows = selectedPrizes.map((item) => ({
             user_id,
