@@ -39,7 +39,8 @@ export async function POST(request) {
         .select("*, prize_content(*), mystery_gift_content(*)")
         .eq("user_id", userId)
         .eq("user_prize_status_id", 1)
-        .order("id", { ascending: false });
+        .order("id", { ascending: false })
+        .order("id", { ascending: true, foreignTable: "prize_content" });
 
     if (error) {
         return new NextResponse(
