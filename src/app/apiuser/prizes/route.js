@@ -40,7 +40,8 @@ export async function GET(request) {
     prize_content!inner(*)
   `)
         .eq("active", 1)
-        .eq("prize_content.deleted", 0);
+        .eq("prize_content.deleted", 0)
+        .order("id", { ascending: true, referencedTable: "prize_content" });
     if (error) {
         return new NextResponse(
             JSON.stringify({ status: false, message: error.message }),
