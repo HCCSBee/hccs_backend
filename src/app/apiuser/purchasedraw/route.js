@@ -60,15 +60,8 @@ export async function POST(request) {
             );
         }
 
-        // 🟢 4. Count draws so far
-        const { count, error: drawCountError } = await supabase
-            .from("draw")
-            .select("*", { count: "exact", head: true })
-            .eq("prize_id", prize_id);
-        console.log(debugTag, "prize_draw_count", { count, drawCountError: drawCountError?.message });
-        if (drawCountError) throw drawCountError;
-
-        const currentDraws = Math.max(Number(prize.draws || 0), Number(count || 0));
+        // 🟢 4. Use prize.draws as the configurable draw counter
+        const currentDraws = Number(prize.draws || 0);
         const totalSlots = Number(prize.slots || 0);
         const remainingSlots = totalSlots - currentDraws;
         console.log(debugTag, "slot_check", {
@@ -124,7 +117,7 @@ export async function POST(request) {
             .select("*, prize_tier(*)")
             .eq("prize_id", prize_id)
             .eq("deleted", 0)
-            .lte("unlock_after", count || 0)
+            .lte("unlock_after", currentDraws)
             .order("id", { ascending: true });
         console.log(debugTag, "eligible_prize_contents", {
             total: prizeContents?.length || 0,
