@@ -68,6 +68,30 @@ export async function POST(request) {
         console.log(debugTag, "prize_draw_count", { count, drawCountError: drawCountError?.message });
         if (drawCountError) throw drawCountError;
 
+        const currentDraws = Math.max(Number(prize.draws || 0), Number(count || 0));
+        const totalSlots = Number(prize.slots || 0);
+        const remainingSlots = totalSlots - currentDraws;
+        console.log(debugTag, "slot_check", {
+            currentDraws,
+            totalSlots,
+            remainingSlots,
+            requestedQuantity: quantity,
+        });
+
+        if (totalSlots > 0 && currentDraws >= totalSlots) {
+            return new NextResponse(
+                JSON.stringify({ status: false, message: "This prize is fully booked" }),
+                { status: 400, headers: corsHeaders }
+            );
+        }
+
+        if (totalSlots > 0 && quantity > remainingSlots) {
+            return new NextResponse(
+                JSON.stringify({ status: false, message: `Only ${remainingSlots} slot(s) remaining` }),
+                { status: 400, headers: corsHeaders }
+            );
+        }
+
         // 🟢 4.1 Count user draws for mystery gift threshold checks
         const { count: userDrawCount, error: userDrawCountError } = await supabase
             .from("draw")
