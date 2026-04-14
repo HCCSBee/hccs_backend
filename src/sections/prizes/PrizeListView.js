@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from 'src/auth/context/supabase/lib';
 import Link from 'next/link';
 import { paths } from 'src/routes/paths';
-import { create_prize, get_prizes, toggle_prize_active } from 'src/components/api/api';
+import { create_prize, get_prizes, reset_prize_draws, toggle_prize_active } from 'src/components/api/api';
 import Iconify from 'src/components/iconify';
 import { useRouter } from 'next/navigation';
 
@@ -97,6 +97,19 @@ export default function PrizeListView() {
         row.active = checked;
         setPrizes(_items);
     }
+
+    const handleResetDraws = async (row) => {
+        const confirmed = window.confirm(`Reset draws for ${row.name} to 0?`);
+        if (!confirmed) return;
+
+        const res = await reset_prize_draws({ id: row.id });
+        if (res.status) {
+            getData();
+        } else {
+            alert(res.message || 'Failed to reset draws');
+        }
+    };
+
     useEffect(() => {
         getData();
     }, []);
@@ -123,6 +136,7 @@ export default function PrizeListView() {
                                 <TableCell>Prize</TableCell>
                                 <TableCell>Price</TableCell>
                                 <TableCell>Slots</TableCell>
+                                <TableCell>Draws</TableCell>
                                 <TableCell></TableCell>
                             </TableRow>
                         </TableHead>
@@ -133,11 +147,22 @@ export default function PrizeListView() {
                                         <TableCell>{r.name}</TableCell>
                                         <TableCell>{r.price}</TableCell>
                                         <TableCell>{r.slots}</TableCell>
+                                        <TableCell>{r.draws ?? 0}</TableCell>
                                         <TableCell style={{
                                             justifyContent: "flex-end",
                                             alignItems: "flex-end",
                                             display: "flex"
                                         }}>
+                                            <Button
+                                                size='small'
+                                                color='warning'
+                                                variant='outlined'
+                                                onClick={() => {
+                                                    handleResetDraws(r)
+                                                }}
+                                            >
+                                                Reset Draws
+                                            </Button>
                                             <Switch checked={r.active}
 
                                                 onChange={(e) => {

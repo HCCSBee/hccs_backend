@@ -28,6 +28,7 @@ export const get_user_detail = async (data) => create_function("/api/users/detai
 
 export const get_performance = async (data) => create_function("/api/performance/")
 export const get_prize_draws = async (data) => create_function("/api/prizes/draw/", data, 1)
+export const reset_prize_draws = async (data) => create_function("/api/prizes/reset_draws", data, 1)
 export const get_transaction_types = async (data) => create_function("/api/transaction_type/");
 export const create_user_transaction = async (data) => create_function("/api/wallet/create", data, 1);
 export const create_user_mystery_gift = async (data) => create_function("/apiuser/purchasedraw", data, 1);
