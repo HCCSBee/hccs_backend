@@ -33,6 +33,30 @@ export async function POST(request) {
             { auth: { autoRefreshToken: false, persistSession: false } }
         );
 
+        // Block new purchases while user still has unopened mystery gift(s).
+        const { count: unopenedMysteryGiftCount, error: unopenedMysteryGiftError } = await supabase
+            .from("user_prize")
+            .select("id", { count: "exact", head: true })
+            .eq("user_id", user_id)
+            .eq("is_mystery_gift", 1)
+            .eq("mystery_gift_open", 0)
+            .eq("user_prize_status_id", 1);
+        console.log(debugTag, "unopened_mystery_gift_check", {
+            unopenedMysteryGiftCount,
+            unopenedMysteryGiftError: unopenedMysteryGiftError?.message,
+        });
+        if (unopenedMysteryGiftError) throw unopenedMysteryGiftError;
+
+        if ((unopenedMysteryGiftCount || 0) > 0) {
+            return new NextResponse(
+                JSON.stringify({
+                    status: false,
+                    message: "Please open your mystery gift before purchasing another draw",
+                }),
+                { status: 400, headers: corsHeaders }
+            );
+        }
+
         // 🟢 1. Get user balance
         const { data: balance, error: balanceError } = await supabase.rpc(
             "get_user_balance",

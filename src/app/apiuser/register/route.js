@@ -2,6 +2,33 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { unstable_noStore } from "next/cache";
 
+const REFERRAL_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+const randomReferralCode = (length = 8) => {
+    let code = "";
+    for (let i = 0; i < length; i++) {
+        code += REFERRAL_CHARS.charAt(Math.floor(Math.random() * REFERRAL_CHARS.length));
+    }
+    return code;
+};
+
+const createUniqueReferralCode = async (supabase, maxAttempts = 10) => {
+    for (let i = 0; i < maxAttempts; i++) {
+        const candidate = randomReferralCode(8);
+        const { data, error } = await supabase
+            .from("user")
+            .select("id")
+            .eq("referral_code", candidate)
+            .limit(1)
+            .maybeSingle();
+
+        if (error) throw error;
+        if (!data) return candidate;
+    }
+
+    throw new Error("Unable to generate unique referral code");
+};
+
 // ✅ Define reusable CORS headers
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*", // You can restrict to http://localhost:3000 if needed
@@ -22,6 +49,18 @@ export async function OPTIONS() {
 export async function POST(request) {
     unstable_noStore();
     const body = await request.formData();
+    const referralCodeInput = String(body.get("referral_code") || "").trim();
+
+    if (!referralCodeInput) {
+        return new NextResponse(
+            JSON.stringify({ status: false, message: "Referral code is required" }),
+            {
+                status: 400,
+                headers: corsHeaders,
+            }
+        );
+    }
+
     const supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL,
         process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE,
@@ -32,6 +71,33 @@ export async function POST(request) {
             },
         }
     );
+
+    const { data: parentUser, error: parentError } = await supabase
+        .from("user")
+        .select("id")
+        .ilike("referral_code", referralCodeInput)
+        .limit(1)
+        .maybeSingle();
+
+    if (parentError) {
+        return new NextResponse(
+            JSON.stringify({ status: false, message: parentError.message }),
+            {
+                status: 400,
+                headers: corsHeaders,
+            }
+        );
+    }
+
+    if (!parentUser) {
+        return new NextResponse(
+            JSON.stringify({ status: false, message: "Invalid referral code" }),
+            {
+                status: 400,
+                headers: corsHeaders,
+            }
+        );
+    }
 
     const { data, error } = await supabase.auth.signUp({
         email: body.get("email"),
@@ -48,12 +114,16 @@ export async function POST(request) {
         );
     }
 
+    const newReferralCode = await createUniqueReferralCode(supabase);
+
     var userRes = await supabase.from("user").insert({
         id: data.user.id,
         username: body.get("username"),
         contact: body.get("contact"),
         country: body.get("country"),
-        email: body.get("email")
+        email: body.get("email"),
+        referral_code: newReferralCode,
+        parent_id: parentUser.id,
     });
 
     if (userRes.error) {

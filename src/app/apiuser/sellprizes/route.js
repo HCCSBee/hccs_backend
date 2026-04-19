@@ -21,63 +21,114 @@ export async function OPTIONS() {
 // ✅ Handle GET request
 export async function POST(request) {
     unstable_noStore();
-    const body = await request.formData();
-    const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE,
-        {
-            auth: {
-                autoRefreshToken: false,
-                persistSession: false,
-            },
-        }
-    );
 
-    var _prizes = JSON.parse(body.get("prizes"));
-    var _mysteryGiftIds = body.get("mystery_gift_ids") ? JSON.parse(body.get("mystery_gift_ids")) : [];
-    const userId = body.get("user_id");
+    try {
+        const body = await request.formData();
+        const supabase = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL,
+            process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE,
+            {
+                auth: {
+                    autoRefreshToken: false,
+                    persistSession: false,
+                },
+            }
+        );
 
-    // ✅ Sell regular prizes
-    var res = await supabase.from("user_prize").update({
-        user_prize_status_id: 3
-    }).eq("user_id", userId)
-        .in("prize_content_id", _prizes).select();
+        var _prizes = JSON.parse(body.get("prizes"));
+        var _mysteryGiftIds = body.get("mystery_gift_ids") ? JSON.parse(body.get("mystery_gift_ids")) : [];
+        const userId = body.get("user_id");
+        let totalSoldAmount = 0;
 
-    for (var i = 0; i < res.data.length; i++) {
-        await supabase.from("user_wallet").insert({
-            user_id: userId,
-            remarks: "Selling item " + res.data[i].id,
-            debit: res.data[i].price,
-            user_wallet_transaction_type_id: 3
-        });
-    }
-
-    // ✅ Sell mystery gifts
-    if (_mysteryGiftIds.length > 0) {
-        var mysteryRes = await supabase.from("user_prize").update({
+        // Sell regular prizes
+        var res = await supabase.from("user_prize").update({
             user_prize_status_id: 3
         }).eq("user_id", userId)
-            .in("id", _mysteryGiftIds)
-            .eq("is_mystery_gift", 1)
-            .select();
+            .in("prize_content_id", _prizes).select();
 
-        for (var j = 0; j < mysteryRes.data.length; j++) {
-            await supabase.from("user_wallet").insert({
+        if (res.error) throw res.error;
+
+        for (var i = 0; i < (res.data || []).length; i++) {
+            const regularSellPrice = Number(res.data[i].price || 0);
+            totalSoldAmount += regularSellPrice;
+
+            const walletRes = await supabase.from("user_wallet").insert({
                 user_id: userId,
-                remarks: "Selling mystery gift " + mysteryRes.data[j].id,
-                debit: mysteryRes.data[j].mystery_gift_unlock_price,
+                remarks: "Selling item " + res.data[i].id,
+                debit: regularSellPrice,
                 user_wallet_transaction_type_id: 3
             });
-        }
-    }
 
-    return new NextResponse(
-        JSON.stringify({
-            status: true,
-        }),
-        {
-            status: 200,
-            headers: corsHeaders,
+            if (walletRes.error) throw walletRes.error;
         }
-    );
+
+        // Sell mystery gifts
+        if (_mysteryGiftIds.length > 0) {
+            var mysteryRes = await supabase.from("user_prize").update({
+                user_prize_status_id: 3
+            }).eq("user_id", userId)
+                .in("id", _mysteryGiftIds)
+                .eq("is_mystery_gift", 1)
+                .select();
+
+            if (mysteryRes.error) throw mysteryRes.error;
+
+            for (var j = 0; j < (mysteryRes.data || []).length; j++) {
+                const mysterySellPrice = Number(mysteryRes.data[j].mystery_gift_unlock_price || 0);
+                totalSoldAmount += mysterySellPrice;
+
+                const mysteryWalletRes = await supabase.from("user_wallet").insert({
+                    user_id: userId,
+                    remarks: "Selling mystery gift " + mysteryRes.data[j].id,
+                    debit: mysterySellPrice,
+                    user_wallet_transaction_type_id: 3
+                });
+
+                if (mysteryWalletRes.error) throw mysteryWalletRes.error;
+            }
+        }
+
+        const { data: seller, error: sellerError } = await supabase
+            .from("user")
+            .select("parent_id")
+            .eq("id", userId)
+            .maybeSingle();
+
+        if (sellerError) throw sellerError;
+
+        if (seller?.parent_id && totalSoldAmount > 0) {
+            const referralBonus = Number((totalSoldAmount * 0.02).toFixed(2));
+
+            if (referralBonus > 0) {
+                const { error: referralBonusError } = await supabase
+                    .from("user_wallet")
+                    .insert({
+                        user_id: seller.parent_id,
+                        remarks: "Referral bonus 2% from child sale " + userId,
+                        debit: referralBonus,
+                        user_wallet_transaction_type_id: 6,
+                    });
+
+                if (referralBonusError) throw referralBonusError;
+            }
+        }
+
+        return new NextResponse(
+            JSON.stringify({
+                status: true,
+            }),
+            {
+                status: 200,
+                headers: corsHeaders,
+            }
+        );
+    } catch (error) {
+        return new NextResponse(
+            JSON.stringify({ status: false, message: error.message }),
+            {
+                status: 400,
+                headers: corsHeaders,
+            }
+        );
+    }
 }

@@ -2,6 +2,33 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { unstable_noStore } from "next/cache";
 
+const REFERRAL_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+const randomReferralCode = (length = 8) => {
+    let code = "";
+    for (let i = 0; i < length; i++) {
+        code += REFERRAL_CHARS.charAt(Math.floor(Math.random() * REFERRAL_CHARS.length));
+    }
+    return code;
+};
+
+const createUniqueReferralCode = async (supabase, maxAttempts = 10) => {
+    for (let i = 0; i < maxAttempts; i++) {
+        const candidate = randomReferralCode(8);
+        const { data, error } = await supabase
+            .from("user")
+            .select("id")
+            .eq("referral_code", candidate)
+            .limit(1)
+            .maybeSingle();
+
+        if (error) throw error;
+        if (!data) return candidate;
+    }
+
+    throw new Error("Unable to generate unique referral code");
+};
+
 // ✅ Define reusable CORS headers
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*", // You can restrict to http://localhost:3000 if needed
@@ -24,7 +51,7 @@ export async function POST(request) {
     const body = await request.formData();
     const email = body.get("email");
     const password = body.get("password");
-    const invitationCode = body.get("invitation_code");
+    const referralCodeInput = String(body.get("referral_code") || "").trim();
 
     const supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -79,9 +106,9 @@ export async function POST(request) {
         );
 
     } else {
-        if (!invitationCode) {
+        if (!referralCodeInput) {
             return new NextResponse(
-                JSON.stringify({ status: false, message: "Invitation code is required" }),
+                JSON.stringify({ status: false, message: "Referral code is required" }),
                 {
                     status: 400,
                     headers: corsHeaders,
@@ -89,17 +116,16 @@ export async function POST(request) {
             );
         }
 
-        const invitationRes = await supabase
-            .from("invitation_code")
-            .select()
-            .eq("code", invitationCode)
-            .is("user_id", null)
-            .eq("is_active", 1)
-            .limit(1);
+        const { data: parentUser, error: parentError } = await supabase
+            .from("user")
+            .select("id")
+            .ilike("referral_code", referralCodeInput)
+            .limit(1)
+            .maybeSingle();
 
-        if (invitationRes.error) {
+        if (parentError) {
             return new NextResponse(
-                JSON.stringify({ status: false, message: invitationRes.error.message }),
+                JSON.stringify({ status: false, message: parentError.message }),
                 {
                     status: 400,
                     headers: corsHeaders,
@@ -107,9 +133,9 @@ export async function POST(request) {
             );
         }
 
-        if (!invitationRes.data || invitationRes.data.length === 0) {
+        if (!parentUser) {
             return new NextResponse(
-                JSON.stringify({ status: false, message: "Invalid invitation code" }),
+                JSON.stringify({ status: false, message: "Invalid referral code" }),
                 {
                     status: 400,
                     headers: corsHeaders,
@@ -132,38 +158,19 @@ export async function POST(request) {
             );
         }
 
+        const newReferralCode = await createUniqueReferralCode(supabase);
+
         var res2 = await supabase.from("user").insert({
             id: data.user.id,
-            email
+            email,
+            referral_code: newReferralCode,
+            parent_id: parentUser.id,
         });
 
         if (res2.error) {
             await supabase.auth.admin.deleteUser(data.user.id);
             return new NextResponse(
                 JSON.stringify({ status: false, message: data.user.id + res2.error.message }),
-                {
-                    status: 400,
-                    headers: corsHeaders,
-                }
-            );
-        }
-
-        const invitationId = invitationRes.data[0].id;
-        const consumeRes = await supabase
-            .from("invitation_code")
-            .update({
-                user_id: data.user.id,
-                is_active: 0,
-            })
-            .eq("id", invitationId)
-            .is("user_id", null)
-            .eq("is_active", 1);
-
-        if (consumeRes.error) {
-            await supabase.from("user").delete().eq("id", data.user.id);
-            await supabase.auth.admin.deleteUser(data.user.id);
-            return new NextResponse(
-                JSON.stringify({ status: false, message: consumeRes.error.message }),
                 {
                     status: 400,
                     headers: corsHeaders,
