@@ -55,18 +55,13 @@ export function useNavData() {
       {
         subheader: 'management',
         items: [
-          {
-            title: 'performance',
-            path: paths.dashboard.root,
-            icon: <Iconify icon="mdi-light:chart-line" />,
+          // {
+          //   title: 'performance',
+          //   path: paths.dashboard.root,
+          //   icon: <Iconify icon="mdi-light:chart-line" />,
 
-          },
-          {
-            title: 'banners',
-            path: paths.settings.banners,
-            icon: <Iconify icon="material-symbols:image-outline-rounded" />,
-
-          },
+          // },
+     
 
           {
             title: 'user',
@@ -75,51 +70,83 @@ export function useNavData() {
 
           },
 
+
+
+
+
+
+
+   
           // {
-          //   title: 'admin',
-          //   path: paths.admins.root,
-          //   icon: ICONS.user,
+          //   title: 'Settings',
+          //   path: paths.settings.root,
+          //   icon: <Iconify icon="ion:settings-outline" />,
+          //   children: [
+          //     {
+          //       title: 'Background',
+          //       path: paths.settings.backgrounds,
+          //       icon: ICONS.product,
 
-          // }, 
-
-          {
-            title: 'prizes',
-            path: paths.prizes.root,
-            icon: ICONS.product,
-
-          },
-
-          {
-            title: 'Mystery Gift',
-            path: paths.mystery_gift_content.root,
-            icon: <Iconify icon="mdi:gift-outline" />,
-          },
+          //     },
+          //   ]
+          // },
 
           {
-            title: 'Invitation Code',
-            path: paths.invitation_code.root,
-            icon: <Iconify icon="tabler:ticket" />,
-          },
-
-
-          // {
-          //   title: 'Wallet',
-          //   path: paths.prizes.root,
-          //   icon: <Iconify icon="uil:wallet" ></Iconify>,
-
-          // }, 
-          {
-            title: 'Settings',
-            path: paths.settings.root,
-            icon: <Iconify icon="ion:settings-outline" />,
+            title: 'News',
+            path: paths.news.root,
+            icon: <Iconify icon="mdi:newspaper-variant-outline" />,
             children: [
               {
-                title: 'Background',
-                path: paths.settings.backgrounds,
-                icon: ICONS.product,
-
+                title: 'Articles',
+                path: paths.news.root,
               },
-            ]
+              {
+                title: 'Categories',
+                path: paths.news_category.root,
+              },
+            ],
+          },
+
+          {
+            title: 'Media',
+            path: paths.media.root,
+            icon: <Iconify icon="material-symbols:perm-media-outline" />,
+          },
+
+          {
+            title: 'Resources',
+            path: paths.resources.root,
+            icon: <Iconify icon="mdi:book-open-page-variant-outline" />,
+          },
+
+          {
+            title: 'Services',
+            path: paths.services.root,
+            icon: <Iconify icon="mdi:briefcase-outline" />,
+          },
+
+          {
+            title: 'Compliance Scan',
+            path: paths.compliance_scan.root,
+            icon: <Iconify icon="mdi:clipboard-check-outline" />,
+          },
+
+          {
+            title: 'User Tier',
+            path: paths.user_tier.root,
+            icon: <Iconify icon="mdi:account-star-outline" />,
+          },
+
+          {
+            title: 'Consultation',
+            path: paths.consultation.root,
+            icon: <Iconify icon="mdi:handshake-outline" />,
+          },
+
+          {
+            title: 'Subscription Plans',
+            path: paths.subscription_plan.root,
+            icon: <Iconify icon="mdi:package-variant-closed" />,
           },
         ],
       },

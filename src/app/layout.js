@@ -30,10 +30,10 @@ export const metadata = {
   keywords: 'react,material,kit,application,dashboard,admin,template',
   manifest: '/manifest.json',
   icons: [
-    { rel: 'icon', url: '/megahoki_logo.png' },
-    { rel: 'icon', type: 'image/png', sizes: '16x16', url: '/megahoki_logo.png' },
-    { rel: 'icon', type: 'image/png', sizes: '32x32', url: '/megahoki_logo.png' },
-    { rel: 'apple-touch-icon', sizes: '180x180', url: '/megahoki_logo.png' },
+    { rel: 'icon', url: '/logo/logo.png' },
+    { rel: 'icon', type: 'image/png', sizes: '16x16', url: '/logo/logo.png' },
+    { rel: 'icon', type: 'image/png', sizes: '32x32', url: '/logo/logo.png' },
+    { rel: 'apple-touch-icon', sizes: '180x180', url: '/logo/logo.png' },
   ],
 };
 

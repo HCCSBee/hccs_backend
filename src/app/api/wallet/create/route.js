@@ -1,37 +1,33 @@
 import { NextResponse } from "next/server";
 import { createClient } from '@supabase/supabase-js';
-import { unstable_noStore } from "next/cache";
 
 export async function POST(request) {
-    unstable_noStore();
-    var body = await request.formData();
+    const body = await request.formData();
     const supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL,
         process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE,
-        {
-            auth: {
-                autoRefreshToken: false,
-                persistSession: false
-            }
-        }
+        { auth: { autoRefreshToken: false, persistSession: false } }
     );
 
-    const { data, error } = await supabase.from("user_wallet").insert({
-        user_id: body.get('id'),
-        user_wallet_transaction_type_id: body.get('user_wallet_transaction_type_id'),
-        debit: body.get('debit'),
-        credit: body.get('credit'),
-        remarks: body.get('remarks')
-    });
+    const payload = {
+        user_id: body.get("id"),
+        user_wallet_transaction_type_id: body.get("user_wallet_transaction_type_id")
+            ? Number(body.get("user_wallet_transaction_type_id"))
+            : null,
+        remarks: body.get("remarks") ?? "",
+        debit: parseFloat(body.get("debit") || 0),
+        credit: parseFloat(body.get("credit") || 0),
+    };
+
+    const { data, error } = await supabase
+        .from("user_wallet")
+        .insert(payload)
+        .select()
+        .single();
 
     if (!error) {
-
-        return NextResponse.json({ status: true });
+        return NextResponse.json({ status: true, data });
     } else {
-        return NextResponse.json({ status: false, message: error.message })
+        return NextResponse.json({ status: false, message: error.message });
     }
-
 }
-
-
-

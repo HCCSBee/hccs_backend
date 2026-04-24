@@ -1,5 +1,4 @@
-import PerformanceView from 'src/sections/dashboard/PerformanceView';
-import OneView from 'src/sections/one/view';
+import ComplianceScanListView from 'src/sections/compliance_scan/ComplianceScanListView';
 
 // ----------------------------------------------------------------------
 
@@ -8,5 +7,5 @@ export const metadata = {
 };
 
 export default function Page() {
-  return <PerformanceView />;
+  return <ComplianceScanListView />;
 }

@@ -25,6 +25,7 @@ export const update_banner = async (data) => create_function("/api/banners/updat
 export const get_users = async (data) => create_function("/api/users/");
 export const get_user_draw = async (data) => create_function("/api/users/draw", data, 1);
 export const get_user_detail = async (data) => create_function("/api/users/detail/", data, 1);
+export const update_user = async (data) => create_function("/api/users/update", data, 1);
 
 export const get_performance = async (data) => create_function("/api/performance/")
 export const get_prize_draws = async (data) => create_function("/api/prizes/draw/", data, 1)
@@ -50,6 +51,58 @@ export const update_invitation_code = async (data) => create_function("/api/invi
 export const delete_invitation_code = async (data) => create_function("/api/invitation_code/delete", data, 1);
 
 export const unlock_user_mystery_gift = async (data) => create_function("/apiuser/unlockmysterygift", data, 1);
+
+// --- News ---
+export const get_news = async () => create_function("/api/news");
+export const create_news = async (data) => create_function("/api/news/create", data, 1);
+export const update_news = async (data) => create_function("/api/news/update", data, 1);
+export const delete_news = async (data) => create_function("/api/news/delete", data, 1);
+
+// --- News Category ---
+export const get_news_categories = async () => create_function("/api/news_category");
+export const create_news_category = async (data) => create_function("/api/news_category/create", data, 1);
+export const update_news_category = async (data) => create_function("/api/news_category/update", data, 1);
+export const delete_news_category = async (data) => create_function("/api/news_category/delete", data, 1);
+
+// --- Media ---
+export const get_media = async () => create_function("/api/media");
+export const create_media = async (data) => create_function("/api/media/create", data, 1);
+export const update_media = async (data) => create_function("/api/media/update", data, 1);
+export const delete_media = async (data) => create_function("/api/media/delete", data, 1);
+
+// --- Resources ---
+export const get_resources = async () => create_function("/api/resources");
+export const create_resource = async (data) => create_function("/api/resources/create", data, 1);
+export const update_resource = async (data) => create_function("/api/resources/update", data, 1);
+export const delete_resource = async (data) => create_function("/api/resources/delete", data, 1);
+
+// --- Services ---
+export const get_services = async () => create_function("/api/services");
+export const create_service = async (data) => create_function("/api/services/create", data, 1);
+export const update_service = async (data) => create_function("/api/services/update", data, 1);
+export const delete_service = async (data) => create_function("/api/services/delete", data, 1);
+export const create_service_feature = async (data) => create_function("/api/services/features/create", data, 1);
+export const delete_service_feature = async (data) => create_function("/api/services/features/delete", data, 1);
+export const create_service_help = async (data) => create_function("/api/services/help/create", data, 1);
+export const delete_service_help = async (data) => create_function("/api/services/help/delete", data, 1);
+
+// --- Compliance Scan ---
+export const get_compliance_scans = async () => create_function("/api/compliance_scan");
+
+// --- Consultation ---
+export const get_consultations = async () => create_function("/api/consultation");
+
+// --- Subscription Plans ---
+export const get_subscription_plans = async () => create_function("/api/subscription_plan");
+export const create_subscription_plan = async (data) => create_function("/api/subscription_plan/create", data, 1);
+export const update_subscription_plan = async (data) => create_function("/api/subscription_plan/update", data, 1);
+export const delete_subscription_plan = async (data) => create_function("/api/subscription_plan/delete", data, 1);
+
+// --- User Tier ---
+export const get_user_tiers = async () => create_function("/api/user_tier");
+export const create_user_tier = async (data) => create_function("/api/user_tier/create", data, 1);
+export const update_user_tier = async (data) => create_function("/api/user_tier/update", data, 1);
+export const delete_user_tier = async (data) => create_function("/api/user_tier/delete", data, 1);
 
 // needs to be changed 
 export const uploadImage = async (file) => {
