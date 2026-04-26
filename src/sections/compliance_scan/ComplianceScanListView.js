@@ -213,29 +213,21 @@ export default function ComplianceScanListView() {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>#</TableCell>
                 <TableCell>Company</TableCell>
-                <TableCell>Contact</TableCell>
                 <TableCell>Email</TableCell>
                 <TableCell>Phone</TableCell>
                 <TableCell>Industry</TableCell>
-                <TableCell>Employees</TableCell>
                 <TableCell>Risk Level</TableCell>
-                <TableCell>Foreign Workers</TableCell>
-                <TableCell>Submitted</TableCell>
                 <TableCell> </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {filteredRows.map((r) => (
                 <TableRow key={r.id}>
-                  <TableCell>{r.id}</TableCell>
                   <TableCell>{r.company_name}</TableCell>
-                  <TableCell>{r.contact_name}</TableCell>
                   <TableCell>{r.business_email}</TableCell>
                   <TableCell>{r.contact_number}</TableCell>
                   <TableCell>{r.industry}</TableCell>
-                  <TableCell>{r.employess}</TableCell>
                   <TableCell>
                     <Chip
                       label={r.risk_level || '-'}
@@ -244,18 +236,8 @@ export default function ComplianceScanListView() {
                       variant="outlined"
                     />
                   </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={r.has_foreign_workers ? 'Yes' : 'No'}
-                      color={r.has_foreign_workers ? 'warning' : 'default'}
-                      size="small"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="caption">
-                      {r.created_at ? new Date(r.created_at).toLocaleDateString() : '-'}
-                    </Typography>
-                  </TableCell>
+
+
                   <TableCell>
                     <IconButton
                       onClick={() => {
