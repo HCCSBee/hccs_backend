@@ -2,16 +2,19 @@
 
 import Container from '@mui/material/Container';
 import {
-  Card, CardContent, CardHeader, Chip, Table, TableBody,
+  Card, CardContent, CardHeader, Chip, IconButton, Table, TableBody,
   TableCell, TableHead, TableRow, Typography,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 
 import { useSettingsContext } from 'src/components/settings';
 import { get_compliance_scans } from 'src/components/api/api';
+import Iconify from 'src/components/iconify';
+import { useRouter } from 'src/routes/hooks';
 
 export default function ComplianceScanListView() {
   const settings = useSettingsContext();
+  const router = useRouter();
   const [rows, setRows] = useState([]);
 
   useEffect(() => {
@@ -37,6 +40,7 @@ export default function ComplianceScanListView() {
                 <TableCell>Employees</TableCell>
                 <TableCell>Foreign Workers</TableCell>
                 <TableCell>Submitted</TableCell>
+                <TableCell> </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -60,6 +64,15 @@ export default function ComplianceScanListView() {
                     <Typography variant="caption">
                       {r.created_at ? new Date(r.created_at).toLocaleDateString() : '-'}
                     </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <IconButton
+                    onClick={()=>{
+                      router.push("/compliance_scan/" + r.id);
+                    }}
+                    >
+                      <Iconify icon="eva:eye-fill" />
+                    </IconButton>
                   </TableCell>
                 </TableRow>
               ))}
