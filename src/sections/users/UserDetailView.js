@@ -1,11 +1,28 @@
 'use client';
 
 import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
 import { useSettingsContext } from 'src/components/settings';
-import { Button, Card, CardContent, CardHeader, Divider, MenuItem, Stack, TextField } from '@mui/material';
+import {
+    Button,
+    Card,
+    CardContent,
+    CardHeader,
+    Chip,
+    Divider,
+    MenuItem,
+    Stack,
+    Tab,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableRow,
+    Tabs,
+    TextField,
+    Typography,
+} from '@mui/material';
 import { useEffect, useState } from 'react';
-import { get_user_detail, get_user_tiers, update_user } from 'src/components/api/api';
+import { get_user_detail, get_user_subscriptions, get_user_tiers, update_user } from 'src/components/api/api';
 import moment from 'moment';
 
 // ----------------------------------------------------------------------
@@ -17,6 +34,8 @@ export default function UserDetailView({ id }) {
     const [tiers, setTiers] = useState([]);
     const [selectedTierId, setSelectedTierId] = useState('');
     const [saving, setSaving] = useState(false);
+    const [subscriptions, setSubscriptions] = useState([]);
+    const [selectedTab, setSelectedTab] = useState('info');
 
     const getData = async () => {
         const [resUser, resTiers] = await Promise.all([
@@ -30,6 +49,8 @@ export default function UserDetailView({ id }) {
         if (resTiers.status) {
             setTiers(resTiers.data);
         }
+        const resSubs = await get_user_subscriptions({ id });
+        if (resSubs.status) setSubscriptions(resSubs.data);
     };
 
     const handleSaveTier = async () => {
@@ -74,29 +95,96 @@ export default function UserDetailView({ id }) {
 
                         <Divider />
 
-                        <Typography variant="subtitle1">Assign Tier</Typography>
-                        <Stack direction="row" gap={2} alignItems="center">
-                            <TextField
-                                label="Tier"
-                                select
-                                size="small"
-                                value={selectedTierId}
-                                onChange={(e) => setSelectedTierId(e.target.value)}
-                                style={{ minWidth: 200 }}
-                            >
-                                <MenuItem value="">— None —</MenuItem>
-                                {tiers.map((t) => (
-                                    <MenuItem key={t.id} value={t.id}>{t.name}</MenuItem>
-                                ))}
-                            </TextField>
-                            <Button variant="contained" onClick={handleSaveTier} disabled={saving}>
-                                {saving ? 'Saving…' : 'Save'}
-                            </Button>
-                        </Stack>
+                        <Tabs value={selectedTab} onChange={(_, v) => setSelectedTab(v)}>
+                            <Tab label="Assign Tier" value="info" />
+                            <Tab label={`Subscriptions (${subscriptions.length})`} value="subscriptions" />
+                        </Tabs>
+
+                        {selectedTab === 'info' && (
+                            <>
+                                <Typography variant="subtitle1">Assign Tier</Typography>
+                                <Stack direction="row" gap={2} alignItems="center">
+                                    <TextField
+                                        label="Tier"
+                                        select
+                                        size="small"
+                                        value={selectedTierId}
+                                        onChange={(e) => setSelectedTierId(e.target.value)}
+                                        style={{ minWidth: 200 }}
+                                    >
+                                        <MenuItem value="">— None —</MenuItem>
+                                        {tiers.map((t) => (
+                                            <MenuItem key={t.id} value={t.id}>{t.name}</MenuItem>
+                                        ))}
+                                    </TextField>
+                                    <Button variant="contained" onClick={handleSaveTier} disabled={saving}>
+                                        {saving ? 'Saving…' : 'Save'}
+                                    </Button>
+                                </Stack>
+                            </>
+                        )}
+
+                        {selectedTab === 'subscriptions' && (
+                            <Table size="small">
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell>#</TableCell>
+                                        <TableCell>Plan</TableCell>
+                                        <TableCell>Billing</TableCell>
+                                        <TableCell>Price</TableCell>
+                                        <TableCell>Status</TableCell>
+                                        <TableCell>Starts</TableCell>
+                                        <TableCell>Ends</TableCell>
+                                        <TableCell>Auto Renew</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {subscriptions.map((s) => (
+                                        <TableRow key={s.id}>
+                                            <TableCell>{s.id}</TableCell>
+                                            <TableCell>{s.subscription_plan?.name ?? '—'}</TableCell>
+                                            <TableCell>{s.subscription_plan?.billing_cycle ?? '—'}</TableCell>
+                                            <TableCell>
+                                                {s.subscription_plan
+                                                    ? `${s.subscription_plan.currency} ${parseFloat(s.subscription_plan.price).toFixed(2)}`
+                                                    : '—'}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Chip
+                                                    label={s.status}
+                                                    size="small"
+                                                    color={
+                                                        s.status === 'active' ? 'success'
+                                                        : s.status === 'expired' ? 'error'
+                                                        : s.status === 'cancelled' ? 'default'
+                                                        : 'warning'
+                                                    }
+                                                />
+                                            </TableCell>
+                                            <TableCell>
+                                                {s.starts_at ? moment(s.starts_at).format('YYYY-MM-DD') : '—'}
+                                            </TableCell>
+                                            <TableCell>
+                                                {s.ends_at ? moment(s.ends_at).format('YYYY-MM-DD') : '—'}
+                                            </TableCell>
+                                            <TableCell>{s.auto_renew ? 'Yes' : 'No'}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                    {subscriptions.length === 0 && (
+                                        <TableRow>
+                                            <TableCell colSpan={8}>
+                                                <Typography variant="body2" color="text.secondary">
+                                                    No subscriptions found.
+                                                </Typography>
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        )}
                     </Stack>
                 </CardContent>
             </Card>
         </Container>
     );
 }
-

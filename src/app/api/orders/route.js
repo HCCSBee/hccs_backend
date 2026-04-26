@@ -2,10 +2,8 @@ import { NextResponse } from "next/server";
 import { createClient } from '@supabase/supabase-js';
 import { unstable_noStore } from "next/cache";
 
-export async function POST(request) {
+export async function GET() {
     unstable_noStore();
-    const body = await request.formData();
-    const id = body.get("id");
     const supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL,
         process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE,
@@ -13,12 +11,11 @@ export async function POST(request) {
     );
 
     const { data, error } = await supabase
-        .from("compliance_scan")
-        .select()
-        .eq("id", id)
-        .single();
+        .from("order")
+        .select("*, order_item(*)")
+        .order("id", { ascending: false });
 
-    if (data) {
+    if (!error) {
         return NextResponse.json({ status: true, data });
     } else {
         return NextResponse.json({ status: false, message: error.message });

@@ -6,6 +6,7 @@ export async function POST(request) {
     unstable_noStore();
     const body = await request.formData();
     const id = body.get("id");
+
     const supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL,
         process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE,
@@ -13,12 +14,12 @@ export async function POST(request) {
     );
 
     const { data, error } = await supabase
-        .from("compliance_scan")
-        .select()
-        .eq("id", id)
-        .single();
+        .from("user_subscription")
+        .select("*, subscription_plan(id, name, billing_cycle, price, currency)")
+        .eq("user_id", id)
+        .order("created_at", { ascending: false });
 
-    if (data) {
+    if (!error) {
         return NextResponse.json({ status: true, data });
     } else {
         return NextResponse.json({ status: false, message: error.message });
