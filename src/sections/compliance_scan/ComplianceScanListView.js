@@ -7,13 +7,16 @@ import {
   CardContent,
   CardHeader,
   Chip,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControlLabel,
   IconButton,
   MenuItem,
   Stack,
+  Switch,
   Table,
   TableBody,
   TableCell,
@@ -25,9 +28,10 @@ import {
 import { useEffect, useMemo, useState } from 'react';
 
 import { useSettingsContext } from 'src/components/settings';
-import { get_compliance_scans } from 'src/components/api/api';
+import { get_compliance_scans, get_compliance_scans_details } from 'src/components/api/api';
 import Iconify from 'src/components/iconify';
 import { useRouter } from 'src/routes/hooks';
+import { generateCompliancePdf, generateComplianceCsv } from './generate-compliance-pdf';
 
 export default function ComplianceScanListView() {
   const settings = useSettingsContext();
@@ -37,6 +41,64 @@ export default function ComplianceScanListView() {
   const [employeeFilter, setEmployeeFilter] = useState('all');
   const [riskLevelFilter, setRiskLevelFilter] = useState('all');
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
+
+  // PDF per-row state
+  const [pdfDialogOpen, setPdfDialogOpen] = useState(false);
+  const [pdfTargetRow, setPdfTargetRow] = useState(null);
+  const [pdfWithDetails, setPdfWithDetails] = useState(true);
+  const [pdfDownloading, setPdfDownloading] = useState(false);
+
+  const handleOpenPdfDialog = (row) => {
+    setPdfTargetRow(row);
+    setPdfWithDetails(true);
+    setPdfDialogOpen(true);
+  };
+
+  const handleDownloadRowPdf = async () => {
+    if (!pdfTargetRow) return;
+    setPdfDownloading(true);
+    try {
+      const res = await get_compliance_scans_details({ id: pdfTargetRow.id });
+      if (!res.status || !res.data) {
+        alert('Failed to load scan details for PDF generation.');
+        return;
+      }
+      const { scan, summary, answers, action_reports } = res.data;
+      await generateCompliancePdf(
+        scan,
+        summary || {},
+        Array.isArray(answers) ? answers : [],
+        Array.isArray(action_reports) ? action_reports : [],
+        { withCustomerDetails: pdfWithDetails }
+      );
+      setPdfDialogOpen(false);
+    } finally {
+      setPdfDownloading(false);
+    }
+  };
+
+  const handleDownloadRowCsv = async () => {
+    if (!pdfTargetRow) return;
+    setPdfDownloading(true);
+    try {
+      const res = await get_compliance_scans_details({ id: pdfTargetRow.id });
+      if (!res.status || !res.data) {
+        alert('Failed to load scan details for CSV generation.');
+        return;
+      }
+      const { scan, summary, answers, action_reports } = res.data;
+      generateComplianceCsv(
+        scan,
+        summary || {},
+        Array.isArray(answers) ? answers : [],
+        Array.isArray(action_reports) ? action_reports : [],
+        { withCustomerDetails: pdfWithDetails }
+      );
+      setPdfDialogOpen(false);
+    } finally {
+      setPdfDownloading(false);
+    }
+  };
 
   const getRiskLevel = (results) => {
     if (!results) return '-';
@@ -70,7 +132,7 @@ export default function ComplianceScanListView() {
   }, []);
 
   const rowsWithRisk = useMemo(
-    () => rows.map((r) => ({ ...r, risk_level: getRiskLevel(r.results) })),
+    () => rows.map((r) => ({ ...r, risk_level: r.risk_level || getRiskLevel(r.results) })),
     [rows]
   );
 
@@ -236,16 +298,22 @@ export default function ComplianceScanListView() {
                       variant="outlined"
                     />
                   </TableCell>
-
-
                   <TableCell>
-                    <IconButton
-                      onClick={() => {
-                        router.push(`/compliance_scan/${r.id}`);
-                      }}
-                    >
-                      <Iconify icon="solar:alt-arrow-right-line-duotone" />
-                    </IconButton>
+                    <Stack direction="row" gap={0.5}>
+                      <IconButton
+                        title="Download PDF Report"
+                        onClick={() => handleOpenPdfDialog(r)}
+                      >
+                        <Iconify icon="solar:file-download-line-duotone" />
+                      </IconButton>
+                      <IconButton
+                        onClick={() => {
+                          router.push(`/compliance_scan/${r.id}`);
+                        }}
+                      >
+                        <Iconify icon="solar:alt-arrow-right-line-duotone" />
+                      </IconButton>
+                    </Stack>
                   </TableCell>
                 </TableRow>
               ))}
@@ -262,6 +330,47 @@ export default function ComplianceScanListView() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* PDF Download Dialog */}
+      <Dialog open={pdfDialogOpen} onClose={() => !pdfDownloading && setPdfDialogOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>Download Report</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            This report includes the compliance scan issues and all action reports taken for{' '}
+            <strong>{pdfTargetRow?.company_name || 'this customer'}</strong>.
+          </Typography>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={pdfWithDetails}
+                onChange={(e) => setPdfWithDetails(e.target.checked)}
+                disabled={pdfDownloading}
+              />
+            }
+            label="Include customer details (name, email, phone)"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setPdfDialogOpen(false)} disabled={pdfDownloading}>Cancel</Button>
+          <Button
+            variant="outlined"
+            onClick={handleDownloadRowCsv}
+            disabled={pdfDownloading}
+            startIcon={pdfDownloading ? <CircularProgress size={16} color="inherit" /> : null}
+          >
+            {pdfDownloading ? 'Generating...' : 'Download CSV'}
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleDownloadRowPdf}
+            disabled={pdfDownloading}
+            startIcon={pdfDownloading ? <CircularProgress size={16} color="inherit" /> : null}
+          >
+            {pdfDownloading ? 'Generating...' : 'Download PDF'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }
+

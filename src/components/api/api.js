@@ -89,6 +89,8 @@ export const delete_service_help = async (data) => create_function("/api/service
 // --- Compliance Scan ---
 export const get_compliance_scans = async () => create_function("/api/compliance_scan");
 export const get_compliance_scans_details = async (data) => create_function("/api/compliance_scan/detail", data, 1);
+export const save_compliance_scan_action_report = async (data) =>
+    create_function('/api/compliance_scan/action_report', data, 1);
 
 // --- Consultation ---
 export const get_consultations = async () => create_function("/api/consultation");
