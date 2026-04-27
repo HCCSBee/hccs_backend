@@ -91,21 +91,21 @@ export function useNavData() {
           //   ]
           // },
 
-          {
-            title: 'News',
-            path: paths.news.root,
-            icon: <Iconify icon="mdi:newspaper-variant-outline" />,
-            children: [
-              {
-                title: 'Articles',
-                path: paths.news.root,
-              },
-              {
-                title: 'Categories',
-                path: paths.news_category.root,
-              },
-            ],
-          },
+          // {
+          //   title: 'News',
+          //   path: paths.news.root,
+          //   icon: <Iconify icon="mdi:newspaper-variant-outline" />,
+          //   children: [
+          //     {
+          //       title: 'Articles',
+          //       path: paths.news.root,
+          //     },
+          //     {
+          //       title: 'Categories',
+          //       path: paths.news_category.root,
+          //     },
+          //   ],
+          // },
 
           {
             title: 'Media',
@@ -113,17 +113,17 @@ export function useNavData() {
             icon: <Iconify icon="material-symbols:perm-media-outline" />,
           },
 
-          {
-            title: 'Resources',
-            path: paths.resources.root,
-            icon: <Iconify icon="mdi:book-open-page-variant-outline" />,
-          },
+          // {
+          //   title: 'Resources',
+          //   path: paths.resources.root,
+          //   icon: <Iconify icon="mdi:book-open-page-variant-outline" />,
+          // },
 
-          {
-            title: 'Services',
-            path: paths.services.root,
-            icon: <Iconify icon="mdi:briefcase-outline" />,
-          },
+          // {
+          //   title: 'Services',
+          //   path: paths.services.root,
+          //   icon: <Iconify icon="mdi:briefcase-outline" />,
+          // },
 
           {
             title: 'Compliance Scan',
@@ -147,6 +147,12 @@ export function useNavData() {
             title: 'Subscription Plans',
             path: paths.subscription_plan.root,
             icon: <Iconify icon="mdi:package-variant-closed" />,
+          },
+
+          {
+            title: 'Orders',
+            path: paths.orders.root,
+            icon: ICONS.order,
           },
         ],
       },

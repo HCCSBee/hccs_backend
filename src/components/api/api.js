@@ -88,6 +88,9 @@ export const delete_service_help = async (data) => create_function("/api/service
 
 // --- Compliance Scan ---
 export const get_compliance_scans = async () => create_function("/api/compliance_scan");
+export const get_compliance_scans_details = async (data) => create_function("/api/compliance_scan/detail", data, 1);
+export const save_compliance_scan_action_report = async (data) =>
+    create_function('/api/compliance_scan/action_report', data, 1);
 
 // --- Consultation ---
 export const get_consultations = async () => create_function("/api/consultation");
@@ -103,6 +106,17 @@ export const get_user_tiers = async () => create_function("/api/user_tier");
 export const create_user_tier = async (data) => create_function("/api/user_tier/create", data, 1);
 export const update_user_tier = async (data) => create_function("/api/user_tier/update", data, 1);
 export const delete_user_tier = async (data) => create_function("/api/user_tier/delete", data, 1);
+
+// --- User Subscriptions ---
+export const get_user_subscriptions = async (data) => create_function("/api/users/subscriptions", data, 1);
+
+// --- Orders ---
+export const get_orders = async () => create_function("/api/orders");
+export const create_order = async (data) => create_function("/api/orders/create", data, 1);
+export const update_order = async (data) => create_function("/api/orders/update", data, 1);
+export const delete_order = async (data) => create_function("/api/orders/delete", data, 1);
+export const create_order_item = async (data) => create_function("/api/orders/items/create", data, 1);
+export const delete_order_item = async (data) => create_function("/api/orders/items/delete", data, 1);
 
 // needs to be changed 
 export const uploadImage = async (file) => {

@@ -18,6 +18,7 @@ const ROOTS = {
   USER_TIER: '/user_tier',
   CONSULTATION: '/consultation',
   SUBSCRIPTION_PLAN: '/subscription_plan',
+  ORDERS: '/orders',
 };
 
 // ----------------------------------------------------------------------
@@ -94,5 +95,8 @@ export const paths = {
   },
   subscription_plan: {
     root: ROOTS.SUBSCRIPTION_PLAN,
+  },
+  orders: {
+    root: ROOTS.ORDERS,
   },
 };
