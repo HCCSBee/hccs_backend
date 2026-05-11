@@ -15,6 +15,8 @@ const ROOTS = {
   RESOURCES: '/resources',
   SERVICES: '/services',
   COMPLIANCE_SCAN: '/compliance_scan',
+  COMPLIANCE_SCAN_FMAS: '/compliance_scan_fmas',
+  QUIZ: '/quiz',
   USER_TIER: '/user_tier',
   CONSULTATION: '/consultation',
   SUBSCRIPTION_PLAN: '/subscription_plan',
@@ -86,6 +88,12 @@ export const paths = {
   },
   compliance_scan: {
     root: ROOTS.COMPLIANCE_SCAN,
+  },
+  compliance_scan_fmas: {
+    root: ROOTS.COMPLIANCE_SCAN_FMAS,
+  },
+  quiz: {
+    root: ROOTS.QUIZ,
   },
   user_tier: {
     root: ROOTS.USER_TIER,

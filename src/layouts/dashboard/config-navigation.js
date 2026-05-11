@@ -113,24 +113,6 @@ export function useNavData() {
             icon: <Iconify icon="material-symbols:perm-media-outline" />,
           },
 
-          // {
-          //   title: 'Resources',
-          //   path: paths.resources.root,
-          //   icon: <Iconify icon="mdi:book-open-page-variant-outline" />,
-          // },
-
-          // {
-          //   title: 'Services',
-          //   path: paths.services.root,
-          //   icon: <Iconify icon="mdi:briefcase-outline" />,
-          // },
-
-          {
-            title: 'Compliance Scan',
-            path: paths.compliance_scan.root,
-            icon: <Iconify icon="mdi:clipboard-check-outline" />,
-          },
-
           {
             title: 'User Tier',
             path: paths.user_tier.root,
@@ -148,11 +130,31 @@ export function useNavData() {
             path: paths.subscription_plan.root,
             icon: <Iconify icon="mdi:package-variant-closed" />,
           },
+            {
+            title: 'Compliance Scan',
+            path: paths.compliance_scan.root,
+            icon: <Iconify icon="mdi:clipboard-check-outline" />,
+          },
 
           {
             title: 'Orders',
             path: paths.orders.root,
             icon: ICONS.order,
+          },
+        ],
+      },
+      {
+        subheader: 'FMAS event',
+        items: [
+          {
+            title: 'Compliance Scan FMAS',
+            path: paths.compliance_scan_fmas.root,
+            icon: <Iconify icon="mdi:clipboard-check-outline" />,
+          },
+          {
+            title: 'Quiz FMAS',
+            path: paths.quiz.root,
+            icon: <Iconify icon="mdi:clipboard-text-outline" />,
           },
         ],
       },
