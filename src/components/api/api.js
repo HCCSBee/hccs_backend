@@ -91,6 +91,11 @@ export const get_compliance_scans = async () => create_function("/api/compliance
 export const get_compliance_scans_details = async (data) => create_function("/api/compliance_scan/detail", data, 1);
 export const save_compliance_scan_action_report = async (data) =>
     create_function('/api/compliance_scan/action_report', data, 1);
+export const clear_compliance_scan_qr = async () => create_function('/api/compliance_scan/clear_qr', {}, 1);
+
+// --- Mini Quiz Completions ---
+export const get_mini_quiz_completions = async () => create_function('/api/mini_quiz_completions');
+export const clear_mini_quiz_qr_code = async () => create_function('/api/mini_quiz_completions/clear_qr_code', {}, 1);
 
 // --- Consultation ---
 export const get_consultations = async () => create_function("/api/consultation");
